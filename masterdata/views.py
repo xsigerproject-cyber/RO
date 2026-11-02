@@ -118,6 +118,8 @@ def list_data(request, kind):
             "title": title,
             "fields": fields,
             "objects": qs,
+            "create_form": form_class() if can_manage(request.user) else None,
+            "show_create_modal": False,
             "can_manage": can_manage(request.user),
             "can_delete": can_delete(request.user),
         },
@@ -155,13 +157,31 @@ def edit_data(request, kind, pk=None):
             "Gagal menyimpan data. Periksa kembali isian form.",
         )
 
+    if pk:
+        return render(
+            request,
+            "masterdata/form.html",
+            {
+                "form": form,
+                "title": title,
+                "kind": kind,
+            },
+        )
+
+    # Jika validasi tambah data gagal, tampilkan kembali daftar
+    # dengan modal tetap terbuka dan pesan error pada field.
     return render(
         request,
-        "masterdata/form.html",
+        "masterdata/list.html",
         {
-            "form": form,
-            "title": title,
             "kind": kind,
+            "title": title,
+            "fields": fields,
+            "objects": model.objects.all(),
+            "create_form": form,
+            "show_create_modal": True,
+            "can_manage": can_manage(request.user),
+            "can_delete": can_delete(request.user),
         },
     )
 
