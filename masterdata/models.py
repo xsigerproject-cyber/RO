@@ -82,15 +82,11 @@ class UserProfile(models.Model):
         return f"{self.user.username} - {self.theme}"
 
 
+# Signal yang lebih aman
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
+def create_or_save_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
-
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    if hasattr(instance, "profile"):
-        instance.profile.save()
     else:
+        # Gunakan get_or_create untuk menghindari race condition
         UserProfile.objects.get_or_create(user=instance)
