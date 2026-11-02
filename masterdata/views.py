@@ -1,4 +1,7 @@
+import logging
+
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import (
@@ -8,6 +11,7 @@ from django.http import (
     Http404,
 )
 from django.db import transaction
+from django.core.exceptions import ValidationError
 from django.db.models import Q, CharField, TextField, IntegerField
 from django.core.exceptions import FieldDoesNotExist
 from openpyxl import Workbook, load_workbook
@@ -20,6 +24,10 @@ from .forms import (
     TemplateProdukForm,
 )
 from .permissions import can_manage, can_delete
+
+
+logger = logging.getLogger(__name__)
+MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5 MB
 
 
 CONFIG = {
@@ -256,6 +264,7 @@ def export_excel(request, kind):
 
 
 @login_required
+@require_POST
 def import_excel(request, kind):
     if not can_manage(request.user):
         return HttpResponseForbidden(
@@ -263,16 +272,19 @@ def import_excel(request, kind):
         )
 
     model, FormClass, fields, title = cfg(kind)
-
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
-
     uploaded_file = request.FILES.get("file")
 
     if not uploaded_file:
         messages.error(
             request,
             "Silakan pilih berkas Excel terlebih dahulu.",
+        )
+        return redirect("master_list", kind)
+
+    if uploaded_file.size > MAX_UPLOAD_SIZE:
+        messages.error(
+            request,
+            "Ukuran berkas maksimal 5 MB.",
         )
         return redirect("master_list", kind)
 
@@ -283,16 +295,16 @@ def import_excel(request, kind):
         )
         return redirect("master_list", kind)
 
+    wb = None
+
     try:
         wb = load_workbook(
             uploaded_file,
             data_only=True,
             read_only=True,
         )
-
         ws = wb.active
 
-        # Membaca header Excel
         first_row = next(
             ws.iter_rows(
                 min_row=1,
@@ -303,14 +315,13 @@ def import_excel(request, kind):
         )
 
         if not first_row:
-            raise ValueError("Berkas Excel kosong.")
+            raise ValidationError("Berkas Excel kosong.")
 
         headers = [
             str(value).strip().lower() if value is not None else ""
             for value in first_row
         ]
 
-        # Header yang wajib tersedia
         required_headers = [
             "kode_dapur" if field_name == "dapur" else field_name
             for field_name in fields
@@ -323,16 +334,35 @@ def import_excel(request, kind):
         ]
 
         if missing_headers:
-            raise ValueError(
+            raise ValidationError(
                 "Kolom Excel tidak lengkap: "
                 + ", ".join(missing_headers)
+            )
+
+        def parse_integer(value, label, row_number):
+            if isinstance(value, bool):
+                raise ValidationError(
+                    f"{label} tidak valid pada baris {row_number}."
+                )
+
+            if isinstance(value, int):
+                return value
+
+            if isinstance(value, float) and value.is_integer():
+                return int(value)
+
+            text_value = str(value).strip() if value is not None else ""
+            if text_value.isdigit():
+                return int(text_value)
+
+            raise ValidationError(
+                f"{label} harus berupa angka bulat pada baris {row_number}."
             )
 
         pk_field = model._meta.pk.name
         imported_count = 0
 
         with transaction.atomic():
-
             for row_number, row in enumerate(
                 ws.iter_rows(
                     min_row=2,
@@ -340,8 +370,6 @@ def import_excel(request, kind):
                 ),
                 start=2,
             ):
-
-                # Abaikan baris yang benar-benar kosong
                 if not row or all(
                     value is None or str(value).strip() == ""
                     for value in row
@@ -354,53 +382,45 @@ def import_excel(request, kind):
                     if header
                 }
 
-                # Primary key wajib tersedia
                 pk_value = row_data.get(pk_field)
+                row_data[pk_field] = parse_integer(
+                    pk_value,
+                    f"Primary key {pk_field}",
+                    row_number,
+                )
 
-                if pk_value is None or str(pk_value).strip() == "":
-                    raise ValueError(
-                        f"Primary key {pk_field} kosong "
-                        f"pada baris {row_number}."
-                    )
-
-                # Konversi kode_dapur menjadi field relasi dapur
                 if kind == "produk":
-                    dapur_code = row_data.pop(
-                        "kode_dapur",
-                        None,
+                    dapur_code = row_data.pop("kode_dapur", None)
+                    row_data["dapur"] = parse_integer(
+                        dapur_code,
+                        "Kode dapur",
+                        row_number,
                     )
 
-                    if dapur_code is None or str(dapur_code).strip() == "":
-                        raise ValueError(
-                            f"Kode dapur kosong pada baris {row_number}."
-                        )
+                for field_name in fields:
+                    if field_name == "dapur":
+                        continue
+                    value = row_data.get(field_name)
+                    if isinstance(value, str):
+                        row_data[field_name] = value.strip()
 
-                    row_data["dapur"] = dapur_code
-
-                # Cari data lama berdasarkan primary key
                 instance = model.objects.filter(
-                    pk=pk_value
+                    pk=row_data[pk_field]
                 ).first()
 
-                # Validasi menggunakan ModelForm
                 form = FormClass(
                     data=row_data,
                     instance=instance,
                 )
 
                 if not form.is_valid():
-                    raise ValueError(
+                    raise ValidationError(
                         f"Kesalahan pada baris {row_number}: "
                         f"{form.errors.as_text()}"
                     )
 
-                # Jika data belum ada, Django membuat data baru.
-                # Jika sudah ada, Django memperbarui data tersebut.
                 form.save()
-
                 imported_count += 1
-
-        wb.close()
 
         messages.success(
             request,
@@ -410,10 +430,23 @@ def import_excel(request, kind):
             ),
         )
 
-    except Exception as error:
+    except ValidationError as error:
         messages.error(
             request,
-            f"Gagal mengimpor Excel: {str(error)}",
+            f"Gagal mengimpor Excel: {error}",
         )
+    except Exception:
+        logger.exception(
+            "Terjadi kesalahan saat mengimpor Excel untuk master %s.",
+            kind,
+        )
+        messages.error(
+            request,
+            "Terjadi kesalahan saat memproses berkas Excel. "
+            "Periksa format berkas atau hubungi administrator.",
+        )
+    finally:
+        if wb is not None:
+            wb.close()
 
     return redirect("master_list", kind)
