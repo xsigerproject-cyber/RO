@@ -9,6 +9,7 @@ from django.http import (
     HttpResponseForbidden,
     HttpResponseNotAllowed,
     Http404,
+    JsonResponse,
 )
 from django.db import transaction
 from django.core.exceptions import ValidationError
@@ -16,7 +17,7 @@ from django.db.models import Q, CharField, TextField, IntegerField
 from django.core.exceptions import FieldDoesNotExist
 from openpyxl import Workbook, load_workbook
 
-from .models import Dapur, Jadwal, Toko, TemplateProduk
+from .models import Dapur, Jadwal, Toko, TemplateProduk, UserProfile
 from .forms import (
     DapurForm,
     JadwalForm,
@@ -63,6 +64,25 @@ def cfg(kind):
         raise Http404("Master data tidak ditemukan.")
 
     return CONFIG[kind]
+
+
+@login_required
+@require_POST
+def set_theme(request):
+    theme = request.POST.get("theme", "light")
+    valid_themes = [choice[0] for choice in UserProfile.THEME_CHOICES]
+
+    if theme not in valid_themes:
+        return JsonResponse(
+            {"status": "error", "message": "Tema tidak valid"},
+            status=400,
+        )
+
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    profile.theme = theme
+    profile.save(update_fields=["theme"])
+
+    return JsonResponse({"status": "success", "theme": theme})
 
 
 @login_required
