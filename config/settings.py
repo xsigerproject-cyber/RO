@@ -21,6 +21,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {"default":{"ENGINE":"django.db.backends.postgresql","NAME":os.getenv("POSTGRES_DB","masterdata"),"USER":os.getenv("POSTGRES_USER","masteruser"),"PASSWORD":os.getenv("POSTGRES_PASSWORD","change-me"),"HOST":os.getenv("POSTGRES_HOST","localhost"),"PORT":os.getenv("POSTGRES_PORT","5432")}}
 AUTH_PASSWORD_VALIDATORS = [{"NAME":"django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},{"NAME":"django.contrib.auth.password_validation.MinimumLengthValidator"}]
 LANGUAGE_CODE="id-id"; TIME_ZONE="Asia/Jakarta"; USE_I18N=True; USE_TZ=True
-STATIC_URL="static/"; STATIC_ROOT=BASE_DIR/"staticfiles"
+STATIC_URL="/static/"
+STATIC_ROOT=BASE_DIR/"staticfiles"
+STATICFILES_DIRS=[BASE_DIR/"static"]
 DEFAULT_AUTO_FIELD="django.db.models.BigAutoField"
 LOGIN_URL="login"; LOGIN_REDIRECT_URL="dashboard"; LOGOUT_REDIRECT_URL="login"
