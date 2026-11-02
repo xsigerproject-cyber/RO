@@ -284,6 +284,67 @@ def export_excel(request, kind):
 
 
 @login_required
+def download_import_template(request, kind):
+    if not can_manage(request.user):
+        return HttpResponseForbidden(
+            "Anda tidak memiliki izin mengimpor data."
+        )
+
+    model, _, fields, title = cfg(kind)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Template Import"
+
+    headers = [
+        "kode_dapur" if field_name == "dapur" else field_name
+        for field_name in fields
+    ]
+    ws.append(headers)
+
+    # Format header agar mudah dibaca; baris data dibiarkan kosong.
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from openpyxl.comments import Comment
+
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill(
+            fill_type="solid",
+            fgColor="0D6EFD",
+        )
+        cell.alignment = Alignment(horizontal="center")
+
+    for column_cells in ws.columns:
+        column_letter = column_cells[0].column_letter
+        header_length = len(str(column_cells[0].value or ""))
+        ws.column_dimensions[column_letter].width = max(
+            18, min(header_length + 5, 32)
+        )
+
+    ws.freeze_panes = "A2"
+    ws.auto_filter.ref = f"A1:{ws.cell(row=1, column=len(headers)).coordinate}"
+
+    if kind == "produk":
+        dapur_column = headers.index("kode_dapur") + 1
+        ws.cell(row=1, column=dapur_column).comment = Comment(
+            "Isi dengan kode_dapur yang sudah terdaftar pada Master Dapur.",
+            "RO",
+        )
+
+    response = HttpResponse(
+        content_type=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        )
+    )
+    response["Content-Disposition"] = (
+        f'attachment; filename="template_import_{kind}.xlsx"'
+    )
+    wb.save(response)
+    return response
+
+
+@login_required
 @require_POST
 def import_excel(request, kind):
     if not can_manage(request.user):
