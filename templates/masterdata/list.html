@@ -76,15 +76,68 @@
     </div>
   </div>
 </div>
-{% if show_create_modal %}
+<style>
+  #createModal .modal-header {
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+  }
+  #createModal .modal-header:active {
+    cursor: grabbing;
+  }
+</style>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const modalElement = document.getElementById("createModal");
-  if (modalElement && window.bootstrap) {
+  if (!modalElement) return;
+
+  const dialog = modalElement.querySelector(".modal-dialog");
+  const header = modalElement.querySelector(".modal-header");
+  let dragging = false;
+  let startX = 0;
+  let startY = 0;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  header.addEventListener("pointerdown", function (event) {
+    if (event.target.closest("button, a, input, select, textarea")) return;
+    dragging = true;
+    startX = event.clientX - offsetX;
+    startY = event.clientY - offsetY;
+    header.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+
+  header.addEventListener("pointermove", function (event) {
+    if (!dragging) return;
+    offsetX = event.clientX - startX;
+    offsetY = event.clientY - startY;
+
+    const maxX = Math.max(0, (window.innerWidth - dialog.offsetWidth) / 2);
+    const maxY = Math.max(0, (window.innerHeight - dialog.offsetHeight) / 2);
+    offsetX = Math.min(maxX, Math.max(-maxX, offsetX));
+    offsetY = Math.min(maxY, Math.max(-maxY, offsetY));
+    dialog.style.transform = "translate(" + offsetX + "px, " + offsetY + "px)";
+  });
+
+  function stopDragging() {
+    dragging = false;
+  }
+  header.addEventListener("pointerup", stopDragging);
+  header.addEventListener("pointercancel", stopDragging);
+
+  modalElement.addEventListener("hidden.bs.modal", function () {
+    offsetX = 0;
+    offsetY = 0;
+    dialog.style.transform = "";
+  });
+
+  {% if show_create_modal %}
+  if (window.bootstrap) {
     bootstrap.Modal.getOrCreateInstance(modalElement).show();
   }
+  {% endif %}
 });
 </script>
-{% endif %}
 {% endif %}
 {% endblock %}
