@@ -17,7 +17,7 @@ docker compose up -d --build
 docker compose exec web python manage.py createsuperuser
 docker compose exec web python manage.py seed_master
 ```
-Buka http://localhost:8000. Admin Django tersedia di /django-admin/.
+Buka http://localhost:7070. Admin Django tersedia di /django-admin/.
 
 ## Hak akses
 Tambahkan pengguna melalui Django Admin dan masukkan ke salah satu grup:
