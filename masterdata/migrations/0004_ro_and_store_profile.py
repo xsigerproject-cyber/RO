@@ -42,14 +42,14 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name="ro",
-            constraint=models.UniqueConstraint(fields=("tgl_ro", "toko", "dapur", "jadwal", "produk"), name="uniq_ro_date_store_kitchen_schedule_product"),
+            constraint=models.UniqueConstraint(fields=("tgl_ro", "toko", "dapur", "jadwal", "produk"), name="uniq_ro_key_prod"),
         ),
         migrations.AddIndex(
             model_name="ro",
-            index=models.Index(fields=["tgl_ro", "toko", "dapur", "jadwal"], name="masterdata_ro_tgl_ro_51f4f0_idx"),
+            index=models.Index(fields=["tgl_ro", "toko", "dapur", "jadwal"], name="ro_key_lookup_idx"),
         ),
         migrations.AddIndex(
             model_name="ro",
-            index=models.Index(fields=["status_ro", "tgl_kirim"], name="masterdata_ro_status_12a7bf_idx"),
+            index=models.Index(fields=["status_ro", "tgl_kirim"], name="ro_status_ship_idx"),
         ),
     ]
