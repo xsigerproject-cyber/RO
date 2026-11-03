@@ -567,3 +567,10 @@ Belum ada hasil eksekusi test atau restore runtime yang diklaim oleh dokumen ini
 - POST valid membuat user, mengatur unusable password, menampilkan pesan sukses, lalu redirect ke daftar user.
 - Perbaikan ini mengatasi view sebelumnya yang tidak mengembalikan HTTP response pada request GET dan tidak melakukan redirect setelah penyimpanan berhasil.
 - Pengujian runtime tetap perlu dilakukan setelah deployment.
+
+
+### 15.9 Penyelarasan tampilan modul Administrasi
+- Field pada form user diberi class Bootstrap 5 sesuai jenis widget: `form-control`, `form-select`, dan `form-check-input`.
+- Form Tambah/Ubah User menggunakan grid responsif, kelompok Role ditampilkan sebagai checkbox yang tersusun, dan status Aktif menggunakan switch.
+- Form password, dashboard, daftar user, backup, dan restore menggunakan pola card, spacing, dan heading yang konsisten dengan SB Admin/Bootstrap 5.
+- Perubahan ini hanya pada presentasi; aturan bisnis dan otorisasi tidak berubah.
