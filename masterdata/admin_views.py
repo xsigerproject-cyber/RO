@@ -10,9 +10,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
-from django.db import connections
-from django.http import FileResponse, Http404, HttpResponse, HttpResponseForbidden
+from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -74,8 +72,7 @@ def _create_backup():
     filename = f"ro_db_{stamp}_{uuid.uuid4().hex[:8]}.dump"
     path = BACKUP_DIR / filename
     _run_db_command([
-        "pg_dump", "--format=custom", "--no-owner", "--no-privileges",
-        "--file", str(path),
+        "pg_dump", "--format=custom", "--file", str(path),
     ])
     if not path.exists() or path.stat().st_size == 0:
         raise RuntimeError("File backup tidak terbentuk atau kosong.")
