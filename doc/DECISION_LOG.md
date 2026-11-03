@@ -336,3 +336,46 @@ Hapus pemanggilan `self.save_m2m()` yang redundan. Pertahankan penyimpanan `User
 **Dampak kode/migration:** Mengubah `AdminUserForm.save()` pada `masterdata/admin_forms.py`. Tidak ada perubahan model atau migration.
 
 **Status pengujian:** Perbaikan kode didasarkan pada perilaku Django `ModelForm`; belum diuji pada server pengguna. Setelah deployment, uji tambah user Admin Toko dengan Toko terpilih dan user role lain tanpa Toko.
+
+
+## 17. 2026-11-03 — Arah Visual Frontend dan Penyegaran Dashboard
+
+**Konteks/masalah:**
+Audit Anti Slop mode AFTER menemukan arah visual belum terdokumentasi, lima tema belum memiliki token komponen yang cukup konsisten, dashboard masih memakai pola kartu statistik generik, serta shadow dan ikon digunakan secara berulang. Pemilik produk menyetujui temuan nomor 2, 3, 4, dan 5 untuk ditindaklanjuti.
+
+**Pilihan yang dibahas:**
+- Menetapkan identitas visual khusus tanpa mengubah aturan bisnis.
+- Menata ulang dashboard agar berorientasi pada transaksi RO.
+- Menyatukan lima tema melalui token semantik dan menyederhanakan elevasi/ikon.
+
+**Keputusan yang disetujui:**
+1. Karakter visual RO tenang, fungsional, profesional, dan berorientasi operasional.
+2. Light menjadi tema default dengan dasar netral dan aksen biru; Dark, Ocean, Forest, dan Sunset tetap tersedia.
+3. Kelima tema menggunakan token semantik bersama untuk background, surface, text, muted text, border, accent, focus, success, warning, dan danger.
+4. Dashboard menonjolkan Daftar RO sebagai jalur kerja utama. Buat RO hanya ditampilkan untuk Administrator karena Admin Produksi tidak memiliki izin membuat transaksi RO pada endpoint saat ini.
+5. Jumlah Dapur, Jadwal, Toko, dan Template Produk tetap menjadi informasi pendukung karena itulah data agregat yang disediakan view saat ini. Jangan menampilkan jumlah Draft/Terkirim sebelum query tersedia.
+6. Permukaan komponen dibuat dominan datar; shadow dibatasi untuk overlay/elemen yang membutuhkan elevasi. Ikon hanya dipakai jika memperjelas fungsi atau entitas.
+7. Tidak ada perubahan aturan bisnis, role, endpoint, model, atau migration dalam penyegaran ini.
+
+**Alasan:**
+Aplikasi adalah alat kerja operasional, sehingga hierarki informasi, keterbacaan, dan akses ke pekerjaan lebih penting daripada dekorasi. Token bersama membantu tema alternatif menjaga konsistensi. Dashboard harus menunjukkan tindakan yang benar-benar diizinkan oleh role dan tidak boleh menampilkan metrik yang belum didukung sumber data.
+
+**Dampak PRD:**
+Menambahkan standar visual frontend dan kriteria penerimaan untuk dokumentasi arah visual, tema, dashboard, penggunaan shadow/ikon, dan cakupan verifikasi.
+
+**Dampak DDS/DDL/database:**
+Menambahkan desain sistem tema berbasis token dan perilaku dashboard. Tidak ada perubahan schema atau migration.
+
+**Dampak kode/migration:**
+- Menambahkan `DESIGN.md`.
+- Menata ulang `templates/masterdata/dashboard.html` menjadi jalur transaksi RO dan ringkasan master.
+- Menyatukan token dan styling lima tema pada `static/css/themes.css`.
+- Menyederhanakan override shell pada `static/css/sb-admin-overrides.css`.
+- Membatasi tombol Buat RO pada dashboard untuk Administrator.
+- Tidak ada perubahan model, endpoint, atau migration.
+
+**Status implementasi dan pengujian:**
+Perubahan source dan dokumentasi dikomit bertahap ke branch `main`. Belum dilakukan verifikasi browser/server, pengujian kontras, click-through, atau pengujian kelima tema pada desktop/tablet/mobile. Temuan 1 dan 6 dari audit tetap di luar cakupan perubahan ini.
+
+**Referensi commit:**
+Lihat riwayat commit branch `main` untuk `DESIGN.md`, template dashboard, CSS tema, dan dokumen ini.
