@@ -125,16 +125,21 @@ def ro_transaksi(request):
     items = []
     read_only = False
     required = ("toko", "dapur", "jadwal", "tgl_ro", "tgl_kirim")
-    if all(request.GET.get(key) for key in required):
-        selected_toko_id = toko_user.pk if is_admin_toko(request.user) and not is_administrator(request.user) and toko_user else request.GET.get("toko")
+    selection_values = {key: request.GET.get(key, "").strip() for key in required}
+    selection_complete = all(selection_values.values())
+    selected_date = parse_date(selection_values["tgl_ro"]) if selection_complete else None
+    selected_ship_date = parse_date(selection_values["tgl_kirim"]) if selection_complete else None
+    selection_valid = selection_complete and selected_date is not None and selected_ship_date is not None
+
+    if selection_valid:
+        selected_toko_id = toko_user.pk if is_admin_toko(request.user) and not is_administrator(request.user) and toko_user else selection_values["toko"]
         selected_toko = get_object_or_404(toko_options, pk=selected_toko_id)
-        selected_dapur = get_object_or_404(Dapur, pk=request.GET.get("dapur"))
-        selected_jadwal = get_object_or_404(Jadwal, pk=request.GET.get("jadwal"))
-        selected_date = parse_date(request.GET.get("tgl_ro", ""))
+        selected_dapur = get_object_or_404(Dapur, pk=selection_values["dapur"])
+        selected_jadwal = get_object_or_404(Jadwal, pk=selection_values["jadwal"])
         selected = {
             "toko": selected_toko, "dapur": selected_dapur,
             "jadwal": selected_jadwal, "tgl_ro": selected_date,
-            "tgl_kirim": parse_date(request.GET.get("tgl_kirim", "")),
+            "tgl_kirim": selected_ship_date,
         }
         existing_rows = list(RO.objects.filter(
             tgl_ro=selected_date, toko=selected_toko,
@@ -149,6 +154,8 @@ def ro_transaksi(request):
     context = {
         "items": items,
         "selected": selected,
+        "selection_complete": selection_complete,
+        "selection_invalid_date": selection_complete and not selection_valid,
         "read_only": read_only,
         "toko_options": toko_options,
         "dapur_options": dapur_options,
