@@ -172,6 +172,7 @@ def ro_daftar(request):
         "dapur": request.GET.get("dapur", "").strip(),
         "jadwal": request.GET.get("jadwal", "").strip(),
         "tgl_kirim": request.GET.get("tgl_kirim", "").strip(),
+        "status": request.GET.get("status", "").strip(),
     }
 
     if filters["tgl_ro"]:
@@ -188,6 +189,8 @@ def ro_daftar(request):
         parsed = parse_date(filters["tgl_kirim"])
         if parsed:
             rows = rows.filter(tgl_kirim=parsed)
+    if filters["status"] in (str(RO.STATUS_DRAFT), str(RO.STATUS_SENT)):
+        rows = rows.filter(status_ro=int(filters["status"]))
 
     toko_user = _user_store(request.user)
     toko_options = Toko.objects.filter(pk=toko_user.pk) if is_admin_toko(request.user) and not is_administrator(request.user) and toko_user else Toko.objects.all()
