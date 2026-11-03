@@ -2,7 +2,7 @@
 {% block title %}Daftar RO | RO{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-  <div><h1 class="mt-2 mb-1">Daftar RO</h1><div class="text-muted">Daftar transaksi sesuai hak akses akun.</div></div>
+  <div><h1 class="mt-2 mb-1">Daftar RO</h1><div class="text-muted">Pilih kriteria RO melalui filter, lalu lihat rincian produk.</div></div>
   <a class="btn btn-primary" href="{% url 'ro_transaksi' %}"><i class="fas fa-plus me-1"></i> Buat RO</a>
 </div>
 
@@ -50,22 +50,17 @@
 <div class="card">
   <div class="card-body table-responsive">
     <table class="table table-bordered table-hover align-middle">
-      <thead class="table-light"><tr><th>Tanggal RO</th><th>Toko</th><th>Dapur</th><th>Jadwal</th><th>Tanggal Kirim</th><th>Produk</th><th>Qty</th><th>Status</th><th>Aksi</th></tr></thead>
+      <thead class="table-light"><tr><th>Produk</th><th>Qty</th><th>Status</th><th>Aksi</th></tr></thead>
       <tbody>
         {% for row in rows %}
         <tr>
-          <td>{{ row.tgl_ro|date:"d-m-Y" }}</td>
-          <td>{{ row.toko }}</td>
-          <td>{{ row.dapur }}</td>
-          <td>{{ row.jadwal }}</td>
-          <td>{{ row.tgl_kirim|date:"d-m-Y" }}</td>
           <td>{{ row.produk.kode_produk }} - {{ row.produk.nama_produk }}</td>
           <td>{{ row.qty_pesan }}</td>
           <td>{% if row.status_ro == 1 %}<span class="badge text-bg-warning">Draft</span>{% else %}<span class="badge text-bg-success">Terkirim</span>{% endif %}</td>
           <td>{% if row.status_ro == 1 %}<a class="btn btn-sm btn-outline-primary" href="{% url 'ro_transaksi' %}?toko={{ row.toko_id }}&dapur={{ row.dapur_id }}&tgl_ro={{ row.tgl_ro|date:'Y-m-d' }}&tgl_kirim={{ row.tgl_kirim|date:'Y-m-d' }}&jadwal={{ row.jadwal_id }}">Buka Draft</a>{% else %}<span class="text-muted small">Terkunci</span>{% endif %}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="9" class="text-center text-muted py-4">Tidak ada transaksi RO yang sesuai dengan filter.</td></tr>
+        <tr><td colspan="4" class="text-center text-muted py-4">Tidak ada transaksi RO yang sesuai dengan filter.</td></tr>
         {% endfor %}
       </tbody>
     </table>
