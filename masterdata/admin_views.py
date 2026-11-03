@@ -133,7 +133,6 @@ def user_edit(request, user_id):
             form.save()
             messages.success(request, f"User {target.username} berhasil diperbarui.")
             return redirect("admin_user_list")
-        return redirect("admin_user_list")
     return render(request, "admin_tools/user_form.html", {"form": form, "page_title": f"Ubah User: {target.username}", "target": target})
 
 
