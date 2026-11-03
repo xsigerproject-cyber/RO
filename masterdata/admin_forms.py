@@ -53,7 +53,9 @@ class AdminUserForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=commit)
         if commit:
-            self.save_m2m()
+            # ModelForm.save(commit=True) already persists many-to-many fields,
+            # including the selected groups. save_m2m() is only exposed when
+            # save(commit=False) is used.
             profile, _ = UserProfile.objects.get_or_create(user=user)
             profile.toko = self.cleaned_data.get("toko")
             profile.save(update_fields=["toko"])
