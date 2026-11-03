@@ -245,3 +245,20 @@ Memperbaiki fungsi `user_create` pada `masterdata/admin_views.py`. Tidak ada per
 
 **Status implementasi dan pengujian:**
 Perbaikan kode telah dikomit ke branch main. Belum diuji pada server pengguna; verifikasi GET form, validasi POST, pembuatan user, serta pengaturan password tetap diperlukan.
+
+
+## 12. 2026-11-03 — Penyelarasan frontend modul Administrasi
+
+**Konteks/masalah:**
+Tampilan form Tambah User memperlihatkan input native browser karena widget pada AdminUserForm belum diberi class Bootstrap. Layout role/grup juga belum disajikan sebagai pilihan yang mudah dibaca.
+
+**Keputusan/perbaikan:**
+Terapkan Bootstrap 5 secara konsisten pada field, gunakan grid responsif, checkbox role terstruktur, switch status aktif, dan rapikan heading/card pada halaman dashboard, user, password, backup, dan restore.
+
+**Dampak PRD:** Tidak mengubah kebutuhan atau aturan bisnis.
+
+**Dampak DDS/DDL:** Menambahkan catatan styling frontend pada bagian modul Administrasi.
+
+**Dampak kode/migration:** Memperbarui `masterdata/admin_forms.py` dan template `templates/admin_tools/`. Tidak ada perubahan model atau migration.
+
+**Status implementasi dan pengujian:** Perubahan tampilan telah dikomit ke branch main. Belum ada verifikasi visual pada browser/server pengguna.
