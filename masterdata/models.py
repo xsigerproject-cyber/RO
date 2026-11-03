@@ -117,7 +117,7 @@ class RO(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["tgl_ro", "toko", "dapur", "jadwal", "produk"],
-                name="uniq_ro_date_store_kitchen_schedule_product",
+                name="uniq_ro_key_prod",
             )
         ]
         indexes = [
