@@ -32,8 +32,8 @@ def _ro_queryset(user):
 @login_required
 @require_http_methods(["GET", "POST"])
 def ro_transaksi(request):
-    if not can_access_ro(request.user):
-        return HttpResponseForbidden("Akun Anda tidak memiliki akses transaksi RO.")
+    if not (is_admin_toko(request.user) or is_administrator(request.user)):
+        return HttpResponseForbidden("Hanya Admin Toko dan Administrator yang dapat membuat atau mengubah RO.")
 
     toko_user = _user_store(request.user)
     toko_options = Toko.objects.all() if is_administrator(request.user) or is_admin_produksi(request.user) else Toko.objects.filter(pk=getattr(toko_user, "pk", None))
@@ -121,7 +121,35 @@ def ro_transaksi(request):
             messages.error(request, str(exc))
             return redirect("ro_transaksi")
 
+    selected = None
+    items = []
+    read_only = False
+    required = ("toko", "dapur", "jadwal", "tgl_ro", "tgl_kirim")
+    if all(request.GET.get(key) for key in required):
+        selected_toko_id = toko_user.pk if is_admin_toko(request.user) and not is_administrator(request.user) and toko_user else request.GET.get("toko")
+        selected_toko = get_object_or_404(toko_options, pk=selected_toko_id)
+        selected_dapur = get_object_or_404(Dapur, pk=request.GET.get("dapur"))
+        selected_jadwal = get_object_or_404(Jadwal, pk=request.GET.get("jadwal"))
+        selected_date = parse_date(request.GET.get("tgl_ro", ""))
+        selected = {
+            "toko": selected_toko, "dapur": selected_dapur,
+            "jadwal": selected_jadwal, "tgl_ro": selected_date,
+            "tgl_kirim": parse_date(request.GET.get("tgl_kirim", "")),
+        }
+        existing_rows = list(RO.objects.filter(
+            tgl_ro=selected_date, toko=selected_toko,
+            dapur=selected_dapur, jadwal=selected_jadwal,
+        ).select_related("produk").order_by("produk__kode_produk"))
+        if existing_rows:
+            items = existing_rows
+            read_only = existing_rows[0].status_ro == RO.STATUS_SENT
+        else:
+            items = list(TemplateProduk.objects.filter(dapur=selected_dapur).order_by("kode_produk"))
+
     context = {
+        "items": items,
+        "selected": selected,
+        "read_only": read_only,
         "toko_options": toko_options,
         "dapur_options": dapur_options,
         "jadwal_options": jadwal_options,
