@@ -21,7 +21,7 @@ class AdminUserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("username", "first_name", "last_name", "email", "is_active", "groups")
+        fields = ("username", "first_name", "last_name", "email", "is_active", "groups", "toko")
         widgets = {"is_active": forms.CheckboxInput(attrs={"class": "form-check-input"})}
 
     def clean(self):
