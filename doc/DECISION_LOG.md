@@ -222,3 +222,26 @@ Kode awal telah ditambahkan ke branch main. Belum ada bukti build Docker, penguj
 
 **Referensi commit:**
 Lihat riwayat commit branch `main` pada repository; perubahan dilakukan dalam beberapa commit bertahap.
+
+
+## 11. 2026-11-03 — Perbaikan error halaman Tambah User
+
+**Konteks/masalah:**
+View `user_create` hanya mengembalikan template pada request POST. Saat form dibuka melalui GET, fungsi berakhir tanpa HTTP response sehingga Django dapat menghasilkan error server. Setelah POST valid, view juga belum mengarahkan pengguna kembali ke daftar user.
+
+**Keputusan/perbaikan:**
+1. Render form untuk request GET.
+2. Jika POST tidak valid, render kembali form beserta error validasi.
+3. Jika POST valid, simpan user, pertahankan aturan password awal unusable, tampilkan pesan sukses, lalu redirect ke daftar user.
+
+**Dampak PRD:**
+Tidak mengubah kebutuhan bisnis maupun aturan manajemen user.
+
+**Dampak DDS/DDL:**
+Mencatat alur GET, POST tidak valid, dan POST valid pada bagian modul administrasi.
+
+**Dampak kode/migration:**
+Memperbaiki fungsi `user_create` pada `masterdata/admin_views.py`. Tidak ada perubahan model atau migration.
+
+**Status implementasi dan pengujian:**
+Perbaikan kode telah dikomit ke branch main. Belum diuji pada server pengguna; verifikasi GET form, validasi POST, pembuatan user, serta pengaturan password tetap diperlukan.
