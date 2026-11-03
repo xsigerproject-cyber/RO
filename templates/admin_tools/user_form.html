@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<h1>{{ page_title }}</h1>
+<div class="card shadow-sm"><div class="card-body"><form method="post">{% csrf_token %}
+{% for field in form %}
+<div class="mb-3">{% if field.name == "is_active" %}<div class="form-check">{{ field }}<label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label></div>{% elif field.name == "groups" %}<label class="form-label">{{ field.label }}</label><div class="border rounded p-3">{{ field }}</div>{% else %}<label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% endif %}{% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>
+{% endfor %}
+{% for error in form.non_field_errors %}<div class="alert alert-danger">{{ error }}</div>{% endfor %}
+<button class="btn btn-primary" type="submit">Simpan</button> <a class="btn btn-outline-secondary" href="{% url 'admin_user_list' %}">Batal</a>
+</form></div></div>
+{% endblock %}
