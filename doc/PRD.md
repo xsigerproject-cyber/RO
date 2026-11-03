@@ -340,3 +340,23 @@ Modul Administrasi hanya dapat diakses Administrator dan superuser.
 35. Restore menolak ekstensi/arsip/konfirmasi yang tidak valid dan ukuran file di atas batas.
 36. Restore otomatis membuat backup sebelum memulai proses pemulihan.
 37. Restore menggunakan transaksi tunggal dan gagal tanpa meninggalkan pemulihan parsial.
+
+
+## 13. Manajemen Role / Group (Implementasi awal)
+
+Modul Administrasi menyediakan menu Manajemen Role untuk Administrator dan superuser.
+
+- Menampilkan daftar Group, jumlah user yang tergabung, dan jumlah permission.
+- Administrator dapat membuat Group baru dan memilih permission Django yang akan diberikan.
+- Administrator dapat mengubah nama Group non-inti dan mengatur permission Group.
+- Group yang masih digunakan oleh satu atau lebih user tidak dapat dihapus. Administrator harus melepas Group dari semua user terlebih dahulu.
+- Role inti `Administrator`, `Admin Toko`, dan `Admin Produksi` tidak dapat dihapus atau diganti namanya karena nama tersebut digunakan langsung oleh pemeriksaan hak akses aplikasi. Permission pada role inti tetap dapat diatur.
+- Seluruh halaman dan aksi dibatasi server-side untuk Administrator/superuser; penghapusan hanya menerima POST dan dilindungi CSRF.
+
+Kriteria penerimaan tambahan:
+38. Administrator dapat melihat daftar role, jumlah user, dan jumlah permission setiap role.
+39. Administrator dapat membuat role dengan nama unik dan permission pilihan.
+40. Administrator dapat mengubah nama role non-inti dan permission role.
+41. Penghapusan role yang masih memiliki user ditolak tanpa mengubah data.
+42. Role inti tidak dapat dihapus atau diganti nama, tetapi permission-nya dapat dikelola.
+43. Pengguna non-Administrator menerima HTTP 403 pada endpoint Manajemen Role.
