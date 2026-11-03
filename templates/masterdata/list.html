@@ -46,6 +46,7 @@
   {% csrf_token %}
   <input type="file" name="file" accept=".xlsx" required>
   <button class="btn btn-sm btn-outline-primary">Import Excel</button>
+  <a class="btn btn-sm btn-outline-success" href="{% url 'download_import_template' kind %}">Download Template</a>
 </form>
 
 <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
