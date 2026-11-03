@@ -302,7 +302,16 @@ def download_import_template(request, kind):
     ]
     ws.append(headers)
 
-    # Format header agar mudah dibaca; baris data dibiarkan kosong.
+    # Baris contoh memakai penanda pada primary key agar dilewati saat import.
+    sample_rows = {
+        "dapur": ["__CONTOH__", "Nama Dapur Contoh", "Tipe Operasional", "Dokumen Contoh"],
+        "jadwal": ["__CONTOH__", "Senin - Jumat"],
+        "toko": ["__CONTOH__", "Nama Toko Contoh"],
+        "produk": ["__CONTOH__", "Nama Produk Contoh", "__CONTOH__"],
+    }
+    ws.append(sample_rows[kind])
+
+    # Format header dan baris contoh agar mudah dibedakan.
     from openpyxl.styles import Font, PatternFill, Alignment
     from openpyxl.comments import Comment
 
@@ -321,8 +330,17 @@ def download_import_template(request, kind):
             18, min(header_length + 5, 32)
         )
 
+    for cell in ws[2]:
+        cell.font = Font(italic=True, color="666666")
+        cell.fill = PatternFill(fill_type="solid", fgColor="FFF2CC")
+        cell.alignment = Alignment(vertical="center")
+        cell.comment = Comment(
+            "BARIS CONTOH: ganti dengan data sebenarnya. Baris ini otomatis dilewati saat Import selama kode primary key tetap __CONTOH__.",
+            "RO",
+        )
+
     ws.freeze_panes = "A2"
-    ws.auto_filter.ref = f"A1:{ws.cell(row=1, column=len(headers)).coordinate}"
+    ws.auto_filter.ref = f"A1:{ws.cell(row=2, column=len(headers)).coordinate}"
 
     if kind == "produk":
         dapur_column = headers.index("kode_dapur") + 1
@@ -464,6 +482,12 @@ def import_excel(request, kind):
                 }
 
                 pk_value = row_data.get(pk_field)
+                if (
+                    isinstance(pk_value, str)
+                    and pk_value.strip().upper() == "__CONTOH__"
+                ):
+                    continue
+
                 row_data[pk_field] = parse_integer(
                     pk_value,
                     f"Primary key {pk_field}",
