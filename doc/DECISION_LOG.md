@@ -320,3 +320,19 @@ Sediakan tombol **Filter** yang menjalankan penyaringan setelah diklik. Enter pa
 **Dampak kode/database:** Menata ulang template role form dan memindahkan script ke lokasi yang benar. Tidak ada perubahan backend, model, atau migration.
 
 **Status pengujian:** Belum diverifikasi di browser server pengguna.
+
+## 16. 2026-11-03 — Perbaikan AttributeError saat Tambah User
+
+**Konteks/masalah:**
+Saat Administrator menambah user dengan POST, `AdminUserForm.save()` memanggil `self.save_m2m()` setelah `super().save(commit=True)`. Pada alur ini Django `ModelForm` sudah menyimpan relasi many-to-many dan tidak menyediakan helper `save_m2m()` pada instance, sehingga muncul `AttributeError`.
+
+**Keputusan/perbaikan:**
+Hapus pemanggilan `self.save_m2m()` yang redundan. Pertahankan penyimpanan `UserProfile.toko` setelah user tersimpan. Perilaku password awal tetap unusable sampai Administrator menetapkan password.
+
+**Dampak PRD:** Menambahkan kriteria penerimaan agar user, Group, dan pemetaan Toko tersimpan tanpa error.
+
+**Dampak DDS/DDL:** Mendokumentasikan aturan `ModelForm.save(commit=True)` dan verifikasi untuk Admin Toko maupun role lain.
+
+**Dampak kode/migration:** Mengubah `AdminUserForm.save()` pada `masterdata/admin_forms.py`. Tidak ada perubahan model atau migration.
+
+**Status pengujian:** Perbaikan kode didasarkan pada perilaku Django `ModelForm`; belum diuji pada server pengguna. Setelah deployment, uji tambah user Admin Toko dengan Toko terpilih dan user role lain tanpa Toko.
