@@ -16,8 +16,8 @@
     </div>
   </div>
   <div class="workflow-actions">
-    <a class="btn btn-primary btn-lg" href="{% url 'ro_transaksi' %}">Buat RO</a>
-    <a class="btn btn-outline-secondary btn-lg" href="{% url 'ro_daftar' %}">Daftar RO</a>
+    {% if is_administrator_user %}<a class="btn btn-primary btn-lg" href="{% url 'ro_transaksi' %}">Buat RO</a>{% endif %}
+    <a class="btn btn-outline-primary btn-lg" href="{% url 'ro_daftar' %}">Daftar RO</a>
   </div>
 </section>
 <section aria-labelledby="master-heading">
