@@ -24,6 +24,21 @@ class AdminUserForm(forms.ModelForm):
         fields = ("username", "first_name", "last_name", "email", "is_active", "groups", "toko")
         widgets = {"is_active": forms.CheckboxInput(attrs={"class": "form-check-input"})}
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            widget = field.widget
+            if name == "is_active":
+                widget.attrs["class"] = "form-check-input"
+            elif name == "groups":
+                widget.attrs["class"] = "form-check-input"
+            elif isinstance(widget, (forms.Select, forms.SelectMultiple)):
+                widget.attrs["class"] = "form-select"
+            elif not isinstance(widget, forms.CheckboxInput):
+                widget.attrs["class"] = "form-control"
+        self.fields["username"].help_text = "Gunakan nama pengguna yang unik untuk login."
+        self.fields["groups"].help_text = "Pilih role sesuai tanggung jawab pengguna."
+
     def clean(self):
         cleaned = super().clean()
         selected_groups = cleaned.get("groups")
