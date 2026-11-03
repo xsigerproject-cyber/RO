@@ -1,1 +1,11 @@
-{% extends "base.html" %}{% block content %}<div class="card shadow-sm"><div class="card-body"><h3>{{ title }}</h3><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Simpan</button><a class="btn btn-light" href="{% url 'master_list' kind %}">Batal</a></form></div></div>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Ubah {{ title }} | RO{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4"><div><h1 class="mt-2 mb-1">Ubah {{ title }}</h1><div class="text-muted">Perbarui informasi data master</div></div><a class="btn btn-outline-secondary" href="{% url 'master_list' kind %}"><i class="fas fa-arrow-left me-1"></i> Kembali</a></div>
+<div class="card mb-4"><div class="card-header"><i class="fas fa-pen-to-square me-1"></i> Form {{ title }}</div><div class="card-body">
+<form method="post">{% csrf_token %}
+{% for field in form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}{% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>{% endfor %}
+{% for error in form.non_field_errors %}<div class="alert alert-danger">{{ error }}</div>{% endfor %}
+<div class="d-flex gap-2"><button class="btn btn-primary" type="submit"><i class="fas fa-save me-1"></i> Simpan</button><a class="btn btn-light" href="{% url 'master_list' kind %}">Batal</a></div>
+</form></div></div>
+{% endblock %}
