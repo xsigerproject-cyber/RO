@@ -47,6 +47,7 @@ class TemplateProduk(models.Model):
         on_delete=models.PROTECT,
         related_name="produk",
     )
+    is_active = models.BooleanField(default=True, verbose_name="Aktif")
 
     class Meta:
         ordering = ["kode_produk"]
