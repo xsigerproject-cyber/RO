@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Restore Database{% endblock %}
 {% block content %}
-<h1>Restore Database</h1>
+<h1 class="h3 mb-3">Restore Database</h1>
 <div class="alert alert-danger"><strong>PERINGATAN:</strong> Restore akan mengganti struktur dan isi database aplikasi saat ini dengan isi file backup. Pengguna lain sebaiknya tidak menggunakan aplikasi selama proses berlangsung.</div>
-<div class="card shadow-sm mb-4"><div class="card-header">Restore dari file backup</div><div class="card-body">
+<div class="card shadow-sm border-0 mb-4"><div class="card-header">Restore dari file backup</div><div class="card-body">
 <form method="post" enctype="multipart/form-data" action="{% url 'admin_restore_execute' %}">{% csrf_token %}
 <div class="mb-3"><label class="form-label" for="backup_file">File PostgreSQL custom dump (.dump)</label><input class="form-control" id="backup_file" type="file" name="backup_file" accept=".dump" required><div class="form-text">Maksimum 1 GB. File harus berasal dari pg_dump format custom.</div></div>
 <div class="mb-3"><label class="form-label" for="confirmation">Ketik <code>RESTORE DATABASE</code> untuk konfirmasi</label><input class="form-control" id="confirmation" name="confirmation" autocomplete="off" required></div>
