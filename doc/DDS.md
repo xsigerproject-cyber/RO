@@ -606,3 +606,9 @@ Belum ada hasil eksekusi test atau restore runtime yang diklaim oleh dokumen ini
 - Tombol Bersihkan mengosongkan kata kunci dan mengembalikan seluruh pilihan.
 - Tidak ada penyaringan otomatis pada setiap event input.
 - Penyaringan hanya mengubah visibilitas opsi di browser; status checkbox tetap utuh.
+
+### 15.13 Perbaikan `AdminUserForm.save()`
+- `super().save(commit=True)` pada `ModelForm` sudah menyimpan relasi many-to-many, termasuk `groups`.
+- Jangan memanggil `self.save_m2m()` setelah `super().save(commit=True)`; Django hanya menyediakan helper `save_m2m()` pada instance ketika `save(commit=False)` dipakai.
+- Setelah user tersimpan, buat/perbarui `UserProfile.toko` seperti sebelumnya. Tidak ada perubahan model atau migration.
+- Verifikasi: tambah user dengan role Admin Toko dan Toko terpilih; pastikan user dan relasi Group serta `UserProfile.toko` tersimpan. Uji juga role non-Admin Toko tanpa pemetaan Toko.
