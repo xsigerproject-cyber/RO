@@ -5,7 +5,7 @@ from django.contrib.auth.models import Group, Permission
 class PermissionChoiceField(forms.ModelMultipleChoiceField):
     def label_from_instance(self, permission):
         content_type = permission.content_type
-        return f"{content_type.app_label} · {content_type.model} · {permission.name}"
+        return f"{content_type.app_label} · {content_type.model} · {permission.name} · {permission.codename}"
 
 
 class AdminRoleForm(forms.ModelForm):
