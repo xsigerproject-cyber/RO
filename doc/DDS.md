@@ -559,3 +559,11 @@ Belum ada URL, nama view, model audit, atau migration yang ditetapkan. Detail im
 - Jangan melakukan uji restore pertama kali pada database produksi.
 
 Belum ada hasil eksekusi test atau restore runtime yang diklaim oleh dokumen ini.
+
+
+### 15.8 Perbaikan alur Tambah User
+- GET ke `/admin-tools/users/add/` selalu merender form kosong.
+- POST dengan data tidak valid merender kembali form beserta pesan validasi.
+- POST valid membuat user, mengatur unusable password, menampilkan pesan sukses, lalu redirect ke daftar user.
+- Perbaikan ini mengatasi view sebelumnya yang tidak mengembalikan HTTP response pada request GET dan tidak melakukan redirect setelah penyimpanan berhasil.
+- Pengujian runtime tetap perlu dilakukan setelah deployment.
