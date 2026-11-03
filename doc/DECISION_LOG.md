@@ -303,3 +303,20 @@ Filter hanya menyembunyikan pilihan yang tidak cocok; checkbox yang sudah terpil
 **Dampak kode/database:** Hanya mengubah template form Role. Tidak ada perubahan model atau migration.
 
 **Status pengujian:** Belum diuji pada browser server pengguna.
+
+
+## 15. 2026-11-03 — Tombol Filter eksplisit pada Manajemen Role
+
+**Konteks/masalah:**
+Pengguna menginginkan kontrol eksplisit untuk menerapkan kata kunci filter permission. Kolom pencarian yang langsung memfilter saat mengetik belum sesuai alur yang diharapkan.
+
+**Keputusan:**
+Sediakan tombol **Filter** yang menjalankan penyaringan setelah diklik. Enter pada kolom juga menjalankan filter. Tombol **Bersihkan** tetap tersedia untuk menampilkan kembali semua permission.
+
+**Perilaku:** Checkbox yang telah dipilih tidak berubah ketika opsi disembunyikan atau ditampilkan. Filter mencocokkan label permission secara case-insensitive.
+
+**Dampak PRD/DDS:** Memperjelas alur interaksi filter.
+
+**Dampak kode/database:** Menata ulang template role form dan memindahkan script ke lokasi yang benar. Tidak ada perubahan backend, model, atau migration.
+
+**Status pengujian:** Belum diverifikasi di browser server pengguna.
