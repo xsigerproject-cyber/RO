@@ -147,3 +147,43 @@ Perubahan Template Produk Aktif/Nonaktif yang tercatat:
 ---
 
 Jika konteks percakapan hilang, mulai dengan membaca dokumen ini, `doc/PRD.md`, `doc/DDS.md`, lalu periksa source code dan migration pada branch aktif. Keputusan eksplisit terbaru tetap menjadi acuan.
+
+
+## 9. 2026-11-03 — Pembersihan data testing oleh Administrator sebelum Go-Live
+
+**Konteks/masalah:**
+Data Template Produk dan RO yang digunakan selama pengembangan/pengujian nantinya perlu dibersihkan sebelum data resmi dimasukkan dan aplikasi digunakan secara operasional. Penghapusan Template Produk secara langsung berisiko melanggar relasi karena produk dapat direferensikan oleh baris RO.
+
+**Pilihan yang dibahas:**
+- Penghapusan Template Produk berdasarkan satu produk, satu Dapur, atau seluruh Template Produk.
+- Inisialisasi yang mengosongkan RO dan Template Produk sekaligus.
+- Penghapusan manual langsung dari database.
+
+**Keputusan yang disetujui:**
+1. Sediakan area Administrasi Data khusus Administrator.
+2. Administrator dapat menghapus satu Template Produk, seluruh Template Produk pada Dapur terpilih, atau seluruh Template Produk.
+3. Penghapusan selektif hanya boleh dilakukan jika target tidak direferensikan oleh RO. Jika masih direferensikan, tindakan ditolak; sistem tidak boleh menghapus RO diam-diam.
+4. Sediakan tindakan terpisah Inisialisasi Data Testing yang menghapus seluruh RO (Draft dan Terkirim) serta seluruh Template Produk.
+5. Inisialisasi mempertahankan Dapur, Jadwal, Toko, akun pengguna, grup/peran, permission, UserProfile, konfigurasi aplikasi, migration history, dan log audit yang harus dipertahankan.
+6. Penghapusan RO lalu Template Produk dilakukan dalam satu transaksi atomik. Kegagalan harus membatalkan seluruh proses.
+7. Reset memerlukan konfirmasi mengetik `RESET DATA`, menampilkan jumlah data terdampak, dan mencatat pelaku/waktu/jenis tindakan/jumlah record pada audit log.
+8. Backup PostgreSQL penuh yang dapat dipulihkan wajib dibuat sebelum reset. Ekspor Excel bukan backup database penuh.
+9. Jangan menghapus database/volume Docker, menjalankan flush, atau mereset sequence secara otomatis.
+
+**Alasan:**
+Tujuannya membersihkan data uji sebelum Go-Live tanpa mengganggu master operasional, akun, dan konfigurasi. Pemisahan penghapusan selektif dan reset menyeluruh mengurangi risiko salah tindakan. Pemeriksaan referensi menjaga integritas RO, sedangkan transaksi atomik dan backup mengurangi risiko kehilangan data parsial/permanen.
+
+**Dampak PRD:**
+Menambahkan kebutuhan, batasan, pengamanan, alur pra-Go-Live, dan kriteria penerimaan untuk fitur Administrasi Data dan Inisialisasi Data Testing.
+
+**Dampak DDS/DDL/database:**
+Menambahkan rancangan otorisasi Administrator, pemeriksaan referensi RO, urutan hapus, transaksi atomik, data yang dipertahankan, audit, backup, dan pengujian. Belum menetapkan schema/model audit atau migration.
+
+**Dampak kode/migration:**
+Belum ada. Fitur ini dicatat sebagai rencana dan tidak boleh dianggap tersedia sebelum implementasi serta pengujian selesai.
+
+**Status implementasi dan pengujian:**
+Disetujui sebagai kebutuhan/rancangan tahap berikutnya; belum diimplementasikan dan belum diuji.
+
+**Referensi commit:**
+Diisi setelah perubahan dokumen ini tersimpan di repository.
