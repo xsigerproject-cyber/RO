@@ -164,9 +164,39 @@ def ro_transaksi(request):
 def ro_daftar(request):
     if not can_access_ro(request.user):
         return HttpResponseForbidden("Akun Anda tidak memiliki akses transaksi RO.")
+
     rows = _ro_queryset(request.user)
+    filters = {
+        "tgl_ro": request.GET.get("tgl_ro", "").strip(),
+        "toko": request.GET.get("toko", "").strip(),
+        "dapur": request.GET.get("dapur", "").strip(),
+        "jadwal": request.GET.get("jadwal", "").strip(),
+        "tgl_kirim": request.GET.get("tgl_kirim", "").strip(),
+    }
+
+    if filters["tgl_ro"]:
+        parsed = parse_date(filters["tgl_ro"])
+        if parsed:
+            rows = rows.filter(tgl_ro=parsed)
+    if filters["toko"].isdigit():
+        rows = rows.filter(toko_id=int(filters["toko"]))
+    if filters["dapur"].isdigit():
+        rows = rows.filter(dapur_id=int(filters["dapur"]))
+    if filters["jadwal"].isdigit():
+        rows = rows.filter(jadwal_id=int(filters["jadwal"]))
+    if filters["tgl_kirim"]:
+        parsed = parse_date(filters["tgl_kirim"])
+        if parsed:
+            rows = rows.filter(tgl_kirim=parsed)
+
+    toko_user = _user_store(request.user)
+    toko_options = Toko.objects.filter(pk=toko_user.pk) if is_admin_toko(request.user) and not is_administrator(request.user) and toko_user else Toko.objects.all()
     return render(request, "masterdata/ro_daftar.html", {
-        "rows": rows,
+        "rows": rows.order_by("-tgl_ro", "toko_id", "dapur_id", "jadwal_id", "produk__kode_produk"),
+        "filters": filters,
+        "toko_options": toko_options,
+        "dapur_options": Dapur.objects.all(),
+        "jadwal_options": Jadwal.objects.all(),
         "is_admin_produksi": is_admin_produksi(request.user) or is_administrator(request.user),
         "is_administrator": is_administrator(request.user),
     })
