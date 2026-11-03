@@ -1,15 +1,45 @@
 {% extends "base.html" %}
 {% block title %}Dashboard | RO{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
-  <div><h1 class="mt-2 mb-1">Dashboard</h1><div class="text-muted">Ringkasan data master aplikasi RO</div></div>
-  <span class="badge text-bg-primary px-3 py-2"><i class="fas fa-database me-1"></i> Master Data</span>
-</div>
-<div class="row g-4">
-  <div class="col-xl-3 col-md-6"><div class="card dashboard-card border-start border-primary border-4 h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><div><div class="small text-muted text-uppercase fw-bold mb-1">Dapur</div><div class="display-6 fw-semibold">{{ counts.dapur }}</div></div><div class="dashboard-icon text-primary"><i class="fas fa-fire-burner"></i></div></div></div><div class="card-footer d-flex align-items-center justify-content-between"><a class="small stretched-link" href="{% url 'master_list' 'dapur' %}">Lihat data</a><i class="fas fa-angle-right"></i></div></div></div>
-  <div class="col-xl-3 col-md-6"><div class="card dashboard-card border-start border-warning border-4 h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><div><div class="small text-muted text-uppercase fw-bold mb-1">Jadwal</div><div class="display-6 fw-semibold">{{ counts.jadwal }}</div></div><div class="dashboard-icon text-warning"><i class="fas fa-calendar-days"></i></div></div></div><div class="card-footer d-flex align-items-center justify-content-between"><a class="small stretched-link" href="{% url 'master_list' 'jadwal' %}">Lihat data</a><i class="fas fa-angle-right"></i></div></div></div>
-  <div class="col-xl-3 col-md-6"><div class="card dashboard-card border-start border-success border-4 h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><div><div class="small text-muted text-uppercase fw-bold mb-1">Toko</div><div class="display-6 fw-semibold">{{ counts.toko }}</div></div><div class="dashboard-icon text-success"><i class="fas fa-store"></i></div></div></div><div class="card-footer d-flex align-items-center justify-content-between"><a class="small stretched-link" href="{% url 'master_list' 'toko' %}">Lihat data</a><i class="fas fa-angle-right"></i></div></div></div>
-  <div class="col-xl-3 col-md-6"><div class="card dashboard-card border-start border-info border-4 h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><div><div class="small text-muted text-uppercase fw-bold mb-1">Template Produk</div><div class="display-6 fw-semibold">{{ counts.produk }}</div></div><div class="dashboard-icon text-info"><i class="fas fa-box"></i></div></div></div><div class="card-footer d-flex align-items-center justify-content-between"><a class="small stretched-link" href="{% url 'master_list' 'produk' %}">Lihat data</a><i class="fas fa-angle-right"></i></div></div></div>
-</div>
-<div class="card mt-4"><div class="card-header"><i class="fas fa-circle-info me-1"></i> Informasi</div><div class="card-body">Gunakan menu Master Data di sidebar untuk mengelola Dapur, Jadwal, Toko, dan Template Produk. Hak akses mengikuti role pengguna yang telah dikonfigurasi di Django Admin.</div></div>
+<section class="page-heading mb-4">
+  <div>
+    <p class="eyebrow mb-2">RUANG KERJA</p>
+    <h1 class="page-title mb-1">Dashboard</h1>
+    <p class="page-description mb-0">Akses cepat untuk transaksi RO dan data operasional.</p>
+  </div>
+</section>
+<section class="workflow-panel mb-4" aria-labelledby="workflow-heading">
+  <div class="workflow-panel__intro">
+    <div>
+      <h2 id="workflow-heading" class="section-title mb-1">Transaksi RO</h2>
+      <p class="text-secondary mb-0">Mulai input pesanan atau tinjau transaksi yang sudah tersimpan.</p>
+    </div>
+  </div>
+  <div class="workflow-actions">
+    <a class="btn btn-primary btn-lg" href="{% url 'ro_transaksi' %}">Buat RO</a>
+    <a class="btn btn-outline-secondary btn-lg" href="{% url 'ro_daftar' %}">Daftar RO</a>
+  </div>
+</section>
+<section aria-labelledby="master-heading">
+  <div class="section-heading mb-3">
+    <div>
+      <h2 id="master-heading" class="section-title mb-1">Data master</h2>
+      <p class="text-secondary mb-0">Jumlah record saat ini dan akses ke masing-masing master.</p>
+    </div>
+  </div>
+  <div class="master-overview">
+    <a class="master-overview__item" href="{% url 'master_list' 'dapur' %}">
+      <span class="master-overview__label">Dapur</span><strong class="master-overview__value">{{ counts.dapur }}</strong><span class="master-overview__action">Buka data</span>
+    </a>
+    <a class="master-overview__item" href="{% url 'master_list' 'jadwal' %}">
+      <span class="master-overview__label">Jadwal</span><strong class="master-overview__value">{{ counts.jadwal }}</strong><span class="master-overview__action">Buka data</span>
+    </a>
+    <a class="master-overview__item" href="{% url 'master_list' 'toko' %}">
+      <span class="master-overview__label">Toko</span><strong class="master-overview__value">{{ counts.toko }}</strong><span class="master-overview__action">Buka data</span>
+    </a>
+    <a class="master-overview__item" href="{% url 'master_list' 'produk' %}">
+      <span class="master-overview__label">Template Produk</span><strong class="master-overview__value">{{ counts.produk }}</strong><span class="master-overview__action">Buka data</span>
+    </a>
+  </div>
+</section>
 {% endblock %}
