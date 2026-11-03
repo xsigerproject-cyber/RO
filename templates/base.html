@@ -72,6 +72,8 @@
     <footer class="py-4 mt-auto"><div class="container-fluid px-4"><div class="d-flex align-items-center justify-content-between small"><div class="text-muted">RO · Master Data</div><div class="text-muted">Django &amp; SB Admin</div></div></div></footer>
   </div>
 </div>
+<!-- Bootstrap bundle wajib dimuat sebelum script SB Admin agar modal, dropdown, dan komponen interaktif berfungsi. -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin@7.0.7/dist/js/scripts.js"></script>
 <script src="{% static 'js/theme-switcher.js' %}"></script>
 {% block extra_js %}{% endblock %}
