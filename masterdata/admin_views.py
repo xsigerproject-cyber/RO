@@ -9,6 +9,8 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.db.models import Count
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,6 +18,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .admin_forms import AdminSetPasswordForm, AdminUserForm
+from .admin_role_forms import AdminRoleForm
 from .models import UserProfile
 from .permissions import is_administrator
 
@@ -170,6 +173,58 @@ def user_delete(request, user_id):
         target.delete()
         messages.success(request, f"User {username} berhasil dihapus.")
     return redirect("admin_user_list")
+
+
+@_admin_only
+def role_list(request):
+    roles = Group.objects.annotate(user_count=Count("user", distinct=True)).order_by("name")
+    return render(request, "admin_tools/role_list.html", {
+        "roles": roles,
+        "protected_roles": AdminRoleForm.PROTECTED_ROLE_NAMES,
+    })
+
+
+@_admin_only
+def role_create(request):
+    form = AdminRoleForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        role = form.save()
+        messages.success(request, f"Role {role.name} berhasil dibuat.")
+        return redirect("admin_role_list")
+    return render(request, "admin_tools/role_form.html", {
+        "form": form, "page_title": "Tambah Role", "is_protected": False,
+    })
+
+
+@_admin_only
+def role_edit(request, group_id):
+    target = get_object_or_404(Group, pk=group_id)
+    form = AdminRoleForm(request.POST or None, instance=target)
+    if request.method == "POST" and form.is_valid():
+        role = form.save()
+        messages.success(request, f"Permission role {role.name} berhasil diperbarui.")
+        return redirect("admin_role_list")
+    return render(request, "admin_tools/role_form.html", {
+        "form": form,
+        "page_title": f"Ubah Role: {target.name}",
+        "is_protected": target.name in AdminRoleForm.PROTECTED_ROLE_NAMES,
+        "target": target,
+    })
+
+
+@_admin_only
+@require_POST
+def role_delete(request, group_id):
+    target = get_object_or_404(Group.objects.annotate(user_count=Count("user", distinct=True)), pk=group_id)
+    if target.name in AdminRoleForm.PROTECTED_ROLE_NAMES:
+        messages.error(request, f"Role inti {target.name} tidak dapat dihapus karena digunakan oleh aturan akses aplikasi.")
+    elif target.user_count:
+        messages.error(request, f"Role {target.name} masih digunakan oleh {target.user_count} user. Lepaskan role dari semua user terlebih dahulu.")
+    else:
+        name = target.name
+        target.delete()
+        messages.success(request, f"Role {name} berhasil dihapus.")
+    return redirect("admin_role_list")
 
 
 @_admin_only
