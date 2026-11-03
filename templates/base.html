@@ -44,6 +44,9 @@
         <div class="nav">
           <div class="sb-sidenav-menu-heading">Menu Utama</div>
           <a class="nav-link" href="{% url 'dashboard' %}"><div class="sb-nav-link-icon"><i class="fas fa-gauge-high"></i></div>Dashboard</a>
+          <div class="sb-sidenav-menu-heading">Transaksi</div>
+          <a class="nav-link" href="{% url 'ro_transaksi' %}"><div class="sb-nav-link-icon"><i class="fas fa-file-circle-plus"></i></div>Buat RO</a>
+          <a class="nav-link" href="{% url 'ro_daftar' %}"><div class="sb-nav-link-icon"><i class="fas fa-clipboard-list"></i></div>Daftar RO</a>
           <div class="sb-sidenav-menu-heading">Master Data</div>
           <a class="nav-link" href="{% url 'master_list' 'dapur' %}"><div class="sb-nav-link-icon"><i class="fas fa-fire-burner"></i></div>Dapur</a>
           <a class="nav-link" href="{% url 'master_list' 'jadwal' %}"><div class="sb-nav-link-icon"><i class="fas fa-calendar-days"></i></div>Jadwal</a>
