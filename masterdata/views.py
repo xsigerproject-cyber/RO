@@ -24,7 +24,7 @@ from .forms import (
     TokoForm,
     TemplateProdukForm,
 )
-from .permissions import can_manage, can_delete
+from .permissions import can_manage, can_delete, is_admin_toko
 
 
 logger = logging.getLogger(__name__)
@@ -87,6 +87,9 @@ def set_theme(request):
 
 @login_required
 def dashboard(request):
+    if is_admin_toko(request.user) and not request.user.is_superuser:
+        return redirect("ro_transaksi")
+
     counts = {
         "dapur": Dapur.objects.count(),
         "jadwal": Jadwal.objects.count(),
@@ -103,6 +106,9 @@ def dashboard(request):
 
 @login_required
 def list_data(request, kind):
+    if is_admin_toko(request.user) and not request.user.is_superuser:
+        return HttpResponseForbidden("Admin Toko hanya dapat mengakses transaksi untuk tokonya.")
+
     model, form_class, fields, title = cfg(kind)
 
     q = request.GET.get("q", "").strip()
@@ -239,6 +245,9 @@ def delete_data(request, kind, pk):
 
 @login_required
 def export_excel(request, kind):
+    if is_admin_toko(request.user) and not request.user.is_superuser:
+        return HttpResponseForbidden("Admin Toko tidak memiliki akses ekspor master data.")
+
     model, _, fields, title = cfg(kind)
 
     wb = Workbook()
