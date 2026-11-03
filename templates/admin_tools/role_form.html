@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
     <div class="small text-muted mt-1" id="permissionFilterCount" aria-live="polite"></div>
   </div>
   <div class="border rounded-3 p-3 bg-light" style="max-height: 520px; overflow-y: auto;"><div class="row g-2" id="permissionChoices">
-  {% for choice in form.permissions %}<div class="col-12 col-md-6 col-xl-4 permission-option" data-permission-text="{{ choice.choice_label|lower }} {{ choice.data.codename|default:''|lower }}"><div class="form-check">{{ choice.tag }}<label class="form-check-label ms-1" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div></div>{% endfor %}
+  {% for choice in form.permissions %}<div class="col-12 col-md-6 col-xl-4 permission-option" data-permission-text="{{ choice.choice_label|lower }}"><div class="form-check">{{ choice.tag }}<label class="form-check-label ms-1" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div></div>{% endfor %}
   </div></div>
   {% for error in form.permissions.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
   <div class="d-flex gap-2 mt-4"><button class="btn btn-primary" type="submit"><i class="fas fa-save me-1"></i>Simpan Role</button><a class="btn btn-light border" href="{% url 'admin_role_list' %}">Batal</a></div>
