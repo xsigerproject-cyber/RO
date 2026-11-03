@@ -207,3 +207,23 @@ Hal berikut tidak dapat dipastikan sebagai kebutuhan/fitur tersedia dari kode ya
 - Migration seed menggunakan primary key yang telah ditentukan. Jika database sudah memiliki record dengan kode yang sama, nilai field record tersebut akan diperbarui oleh migration.
 - Backup database disarankan sebelum deployment migration pada database produksi.
 - Keberhasilan dokumen ini tidak menyatakan bahwa seluruh skenario telah diuji pada server produksi.
+
+
+## 10. Status Aktif/Nonaktif Template Produk dan Sinkronisasi Draft
+
+- Setiap Template Produk memiliki status Aktif/Nonaktif; produk baru secara default berstatus Aktif.
+- Hanya produk Aktif pada Dapur yang dipilih yang dimasukkan ke transaksi RO baru.
+- Draft yang masih berjalan disinkronkan dengan Template Produk Aktif setiap kali transaksi Draft dibuka atau disimpan:
+  - Produk yang berubah menjadi Nonaktif otomatis dikeluarkan dari Draft beserta Qty Draft-nya.
+  - Produk Aktif yang baru ditambahkan ke Template Produk ikut ditambahkan ke Draft dengan Qty awal 0.
+  - Produk yang tetap Aktif mempertahankan Qty yang sudah diinput.
+- Perubahan status Template Produk tidak mengubah RO berstatus Terkirim.
+- Produk musiman dapat digunakan kembali dengan mengaktifkan kembali record Template Produk yang sama; tidak perlu membuat kode produk baru.
+- Status aktif/nonaktif dikelola oleh pengguna yang memiliki hak kelola master.
+
+Kriteria penerimaan tambahan:
+13. Template Produk dapat disimpan sebagai Aktif atau Nonaktif.
+14. RO baru hanya menampilkan produk Aktif dari Dapur terpilih.
+15. Draft menghapus produk Nonaktif dan Qty-nya saat Draft dibuka atau disimpan.
+16. Draft menambahkan produk Aktif baru dengan Qty 0 tanpa mereset Qty produk lain.
+17. Perubahan status Template Produk tidak mengubah baris RO Terkirim.
