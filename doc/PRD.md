@@ -231,3 +231,59 @@ Kriteria penerimaan tambahan:
 15. Draft menghapus produk Nonaktif dan Qty-nya saat Draft dibuka atau disimpan.
 16. Draft menambahkan produk Aktif baru dengan Qty 0 tanpa mereset Qty produk lain.
 17. Perubahan status Template Produk tidak mengubah baris RO Terkirim.
+
+
+## 11. Administrasi Data dan Inisialisasi Data Testing (Rencana)
+
+<badge>Belum diimplementasikan</badge>
+
+Fitur ini khusus untuk Administrator. Tujuannya membersihkan data uji sebelum pengisian data resmi dan Go-Live, tanpa menghapus master operasional yang diperlukan aplikasi.
+
+### 11.1 Penghapusan Template Produk
+
+Administrator dapat menghapus satu Template Produk, seluruh Template Produk pada satu Dapur, atau seluruh isi Template Produk. Sistem harus menampilkan cakupan dan jumlah record yang akan dihapus.
+
+Karena Template Produk dapat direferensikan oleh baris RO, penghapusan selektif hanya boleh dilakukan jika produk yang dituju tidak direferensikan oleh RO mana pun. Jika masih direferensikan, sistem menolak tindakan dan memberi tahu Administrator bahwa data RO terkait perlu dibersihkan terlebih dahulu. Sistem tidak boleh menghapus RO secara diam-diam sebagai efek samping penghapusan Template Produk.
+
+### 11.2 Inisialisasi Data Testing
+
+Sediakan tindakan terpisah **Inisialisasi Data Testing** untuk mengosongkan seluruh data RO (Draft maupun Terkirim) dan seluruh Template Produk (Aktif maupun Nonaktif).
+
+Inisialisasi harus mempertahankan:
+- Master Dapur, Jadwal, dan Toko.
+- Akun pengguna, grup/peran, permission, dan preferensi pengguna.
+- Konfigurasi aplikasi, migration history, serta log audit yang memang harus dipertahankan.
+
+Inisialisasi tidak menghapus volume/database PostgreSQL dan tidak mereset sequence/auto-increment kecuali ada keputusan terpisah yang disetujui.
+
+### 11.3 Pengamanan Wajib
+
+- Semua endpoint dan tindakan diperiksa di sisi server menggunakan izin khusus Administrator. Admin Master/Editor Master tidak otomatis memperoleh akses ini; superuser dapat memperoleh akses sebagai Administrator.
+- Menu dan tombol hanya ditampilkan kepada Administrator, tetapi penyembunyian menu bukan pengganti pemeriksaan izin server-side.
+- Mutasi hanya menerima POST dan dilindungi CSRF.
+- Tampilkan ringkasan jumlah RO dan Template Produk yang akan dihapus.
+- Untuk inisialisasi, minta Administrator mengetik teks persis `RESET DATA` dan mengonfirmasi bahwa tindakan tidak dapat dibatalkan dari aplikasi.
+- Proses inisialisasi harus atomik: hapus baris RO terlebih dahulu, lalu Template Produk, dalam satu transaksi database. Jika salah satu langkah gagal, seluruh transaksi dibatalkan.
+- Catat pelaku, waktu, jenis tindakan, dan jumlah record yang dihapus pada log audit yang tidak ikut dihapus.
+- Administrator wajib membuat backup PostgreSQL yang dapat dipulihkan sebelum inisialisasi. Ekspor Excel bukan pengganti backup database penuh.
+
+### 11.4 Alur Operasional yang Disarankan
+
+1. Selesaikan pengujian aplikasi dan pastikan data uji tidak lagi diperlukan.
+2. Buat dan verifikasi backup PostgreSQL.
+3. Jalankan Inisialisasi Data Testing sebagai Administrator.
+4. Impor Template Produk resmi.
+5. Verifikasi jumlah, kode produk, Dapur, dan status Aktif/Nonaktif.
+6. Lanjutkan Go-Live setelah hasil verifikasi disetujui.
+
+### 11.5 Kriteria Penerimaan Fitur (Saat Diimplementasikan)
+
+18. Hanya Administrator/superuser yang dapat melihat dan menjalankan menu administrasi data; role lain menerima HTTP 403 jika mencoba endpoint secara langsung.
+19. Administrator dapat menghapus satu Template Produk, seluruh Template Produk pada Dapur terpilih, atau seluruh Template Produk jika tidak ada referensi RO.
+20. Penghapusan Template Produk yang masih direferensikan RO ditolak dan tidak mengubah RO maupun Template Produk lain.
+21. Konfirmasi menampilkan cakupan dan jumlah record yang akan dihapus.
+22. Inisialisasi menghapus semua RO Draft dan Terkirim serta semua Template Produk dalam satu transaksi atomik.
+23. Inisialisasi mempertahankan Dapur, Jadwal, Toko, akun, grup/peran, permission, konfigurasi, dan log audit yang ditetapkan untuk dipertahankan.
+24. Inisialisasi memerlukan konfirmasi teks `RESET DATA`; konfirmasi yang salah tidak mengubah data.
+25. Log audit mencatat pelaku, waktu, jenis tindakan, dan jumlah record yang dihapus.
+26. Kegagalan di tengah proses inisialisasi menyebabkan rollback penuh.
