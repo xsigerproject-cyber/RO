@@ -36,6 +36,14 @@ def _admin_only(view):
     return wrapped
 
 
+def _is_active_administrator(user):
+    return user.is_active and (user.is_superuser or user.groups.filter(name="Administrator").exists())
+
+
+def _has_other_active_administrator(user):
+    return User.objects.filter(is_active=True, groups__name="Administrator").exclude(pk=user.pk).exists() or User.objects.filter(is_active=True, is_superuser=True).exclude(pk=user.pk).exists()
+
+
 def _db_env():
     db = settings.DATABASES["default"]
     return {
@@ -119,8 +127,14 @@ def user_edit(request, user_id):
         return HttpResponseForbidden("Hanya superuser yang dapat mengubah akun superuser.")
     form = AdminUserForm(request.POST or None, instance=target)
     if request.method == "POST" and form.is_valid():
-        form.save()
-        messages.success(request, f"User {target.username} berhasil diperbarui.")
+        if target.pk == request.user.pk and not form.cleaned_data.get("is_active"):
+            form.add_error("is_active", "Anda tidak dapat menonaktifkan akun yang sedang digunakan.")
+        elif _is_active_administrator(target) and (not form.cleaned_data.get("is_active") or not form.cleaned_data.get("groups").filter(name="Administrator").exists()) and not _has_other_active_administrator(target):
+            form.add_error("groups", "Tidak boleh menonaktifkan atau menghapus role Administrator aktif terakhir.")
+        else:
+            form.save()
+            messages.success(request, f"User {target.username} berhasil diperbarui.")
+            return redirect("admin_user_list")
         return redirect("admin_user_list")
     return render(request, "admin_tools/user_form.html", {"form": form, "page_title": f"Ubah User: {target.username}", "target": target})
 
@@ -146,6 +160,8 @@ def user_delete(request, user_id):
         messages.error(request, "Akun yang sedang digunakan tidak dapat dihapus.")
     elif target.is_superuser:
         messages.error(request, "Akun superuser tidak dapat dihapus melalui modul ini.")
+    elif _is_active_administrator(target) and not _has_other_active_administrator(target):
+        messages.error(request, "Administrator aktif terakhir tidak dapat dihapus.")
     else:
         username = target.username
         target.delete()
@@ -195,6 +211,9 @@ def restore_database(request):
         return redirect("admin_restore")
     if not uploaded:
         messages.error(request, "Pilih file backup terlebih dahulu.")
+        return redirect("admin_restore")
+    if not uploaded.name.lower().endswith(".dump"):
+        messages.error(request, "File restore harus berakhiran .dump (format PostgreSQL custom).")
         return redirect("admin_restore")
     if uploaded.size > 1024 * 1024 * 1024:
         messages.error(request, "Ukuran file backup maksimal 1 GB.")
