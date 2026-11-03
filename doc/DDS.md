@@ -574,3 +574,21 @@ Belum ada hasil eksekusi test atau restore runtime yang diklaim oleh dokumen ini
 - Form Tambah/Ubah User menggunakan grid responsif, kelompok Role ditampilkan sebagai checkbox yang tersusun, dan status Aktif menggunakan switch.
 - Form password, dashboard, daftar user, backup, dan restore menggunakan pola card, spacing, dan heading yang konsisten dengan SB Admin/Bootstrap 5.
 - Perubahan ini hanya pada presentasi; aturan bisnis dan otorisasi tidak berubah.
+
+
+## 15.10 Manajemen Role / Group
+
+### Endpoint
+- `GET /admin-tools/roles/`: daftar Group, jumlah user, jumlah permission.
+- `GET/POST /admin-tools/roles/add/`: membuat Group dan menetapkan permission.
+- `GET/POST /admin-tools/roles/<group_id>/edit/`: mengubah Group dan permission.
+- `POST /admin-tools/roles/<group_id>/delete/`: menghapus Group jika tidak digunakan user.
+
+### Implementasi
+- Form `AdminRoleForm` menggunakan model Django `Group` dan relasi `Permission`.
+- Permission diurutkan menurut app label, model, dan codename.
+- View memakai decorator `_admin_only`; delete memakai POST dan CSRF.
+- Daftar role menggunakan agregasi jumlah user unik.
+- Penghapusan ditolak jika jumlah user lebih dari nol.
+- Role inti `Administrator`, `Admin Toko`, dan `Admin Produksi` dilindungi dari rename dan delete karena nama tersebut dipakai oleh fungsi pemeriksaan role. Permission-nya tetap dapat diedit.
+- Tidak ada perubahan model aplikasi atau migration database.
