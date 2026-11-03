@@ -375,3 +375,8 @@ Kriteria penerimaan tambahan:
 - Tombol **Bersihkan** menghapus kata kunci dan menampilkan kembali seluruh permission.
 - Tombol Enter pada kolom filter menjalankan aksi Filter.
 - Status checkbox permission yang sudah dipilih tetap dipertahankan saat daftar disaring.
+
+### 12.6 Perbaikan penyimpanan grup saat Tambah User
+- Saat `ModelForm.save(commit=True)` dipanggil, Django sudah menyimpan relasi many-to-many `groups`; aplikasi tidak boleh memanggil `save_m2m()` lagi karena method itu hanya tersedia pada alur `save(commit=False)`.
+- Pembuatan user tetap menyimpan pemetaan Toko pada `UserProfile` dan tetap membuat password awal unusable sampai Administrator menetapkan password.
+- Kriteria penerimaan: POST Tambah User dengan role dan Toko yang valid berhasil membuat user, menyimpan grup yang dipilih, serta menyimpan pemetaan Toko tanpa `AttributeError`.
