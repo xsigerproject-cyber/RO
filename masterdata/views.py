@@ -53,7 +53,7 @@ CONFIG = {
     "produk": (
         TemplateProduk,
         TemplateProdukForm,
-        ["kode_produk", "nama_produk", "dapur"],
+        ["kode_produk", "nama_produk", "dapur", "is_active"],
         "Template Produk",
     ),
 }
