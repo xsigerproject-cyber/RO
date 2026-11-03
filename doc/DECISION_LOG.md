@@ -285,3 +285,21 @@ Tambahkan menu Manajemen Role di dashboard Administrasi. Administrator dapat mem
 **Dampak kode/migration:** Menambah `masterdata/admin_role_forms.py`, dua template role, view dan route baru, serta kartu menu pada dashboard Administrasi. Tidak ada migration.
 
 **Status implementasi dan pengujian:** Kode telah dikomit ke branch main. Belum diverifikasi pada server/browser dan belum ada klaim pengujian runtime.
+
+
+## 14. 2026-11-03 — Filter kata kunci pada daftar permission Role
+
+**Konteks/masalah:**
+Daftar permission Django cukup panjang. Saat mengubah Role seperti Admin Produksi, Administrator perlu cara cepat menemukan permission berdasarkan kata seperti `view`.
+
+**Keputusan:**
+Tambahkan kotak filter kata kunci pada form Manajemen Role. Filter tidak case-sensitive dan mencari pada nama permission, model, app, serta codename. Contoh input `view` menampilkan seluruh pilihan yang mengandung kata tersebut.
+
+**Perilaku penting:**
+Filter hanya menyembunyikan pilihan yang tidak cocok; checkbox yang sudah terpilih tetap terpilih ketika filter berubah. Tombol Bersihkan mengembalikan semua permission.
+
+**Dampak PRD/DDS:** Menambahkan kebutuhan dan catatan implementasi filter permission.
+
+**Dampak kode/database:** Hanya mengubah template form Role. Tidak ada perubahan model atau migration.
+
+**Status pengujian:** Belum diuji pada browser server pengguna.
