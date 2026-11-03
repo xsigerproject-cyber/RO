@@ -52,13 +52,9 @@
           <a class="nav-link" href="{% url 'master_list' 'jadwal' %}"><div class="sb-nav-link-icon"><i class="fas fa-calendar-days"></i></div>Jadwal</a>
           <a class="nav-link" href="{% url 'master_list' 'toko' %}"><div class="sb-nav-link-icon"><i class="fas fa-store"></i></div>Toko</a>
           <a class="nav-link" href="{% url 'master_list' 'produk' %}"><div class="sb-nav-link-icon"><i class="fas fa-box"></i></div>Template Produk</a>
-          {% if request.user.is_authenticated and request.user.is_superuser or request.user.groups.all %}
-            {% if request.user.is_superuser or request.user.groups.all|length %}
-              {% if request.user.is_superuser or request.user.groups.filter %}
-              {% endif %}
-            {% endif %}
-          {% endif %}
-          {% if request.user.is_superuser or request.user.groups.filter %}
+          {% if is_administrator_user %}
+          <div class="sb-sidenav-menu-heading">Administrasi</div>
+          <a class="nav-link" href="{% url 'admin_home' %}"><div class="sb-nav-link-icon"><i class="fas fa-user-shield"></i></div>Administrasi</a>
           {% endif %}
           <div class="sb-sidenav-menu-heading">Akun</div>
           {% if request.user.is_authenticated %}
