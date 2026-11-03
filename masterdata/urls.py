@@ -6,6 +6,10 @@ from . import admin_views
 urlpatterns = [
     path("admin-tools/", admin_views.admin_home, name="admin_home"),
     path("admin-tools/users/", admin_views.user_list, name="admin_user_list"),
+    path("admin-tools/roles/", admin_views.role_list, name="admin_role_list"),
+    path("admin-tools/roles/add/", admin_views.role_create, name="admin_role_create"),
+    path("admin-tools/roles/<int:group_id>/edit/", admin_views.role_edit, name="admin_role_edit"),
+    path("admin-tools/roles/<int:group_id>/delete/", admin_views.role_delete, name="admin_role_delete"),
     path("admin-tools/users/add/", admin_views.user_create, name="admin_user_create"),
     path("admin-tools/users/<int:user_id>/edit/", admin_views.user_edit, name="admin_user_edit"),
     path("admin-tools/users/<int:user_id>/password/", admin_views.user_password, name="admin_user_password"),
