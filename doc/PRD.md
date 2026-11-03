@@ -380,3 +380,23 @@ Kriteria penerimaan tambahan:
 - Saat `ModelForm.save(commit=True)` dipanggil, Django sudah menyimpan relasi many-to-many `groups`; aplikasi tidak boleh memanggil `save_m2m()` lagi karena method itu hanya tersedia pada alur `save(commit=False)`.
 - Pembuatan user tetap menyimpan pemetaan Toko pada `UserProfile` dan tetap membuat password awal unusable sampai Administrator menetapkan password.
 - Kriteria penerimaan: POST Tambah User dengan role dan Toko yang valid berhasil membuat user, menyimpan grup yang dipilih, serta menyimpan pemetaan Toko tanpa `AttributeError`.
+
+
+## 14. Standar Visual Frontend
+
+Arah visual frontend ditetapkan pada `DESIGN.md` dan menjadi pedoman UI lintas halaman.
+
+- Karakter antarmuka: tenang, fungsional, profesional, dan berorientasi pada pekerjaan operasional.
+- Light menjadi tema default; tema Dark, Ocean, Forest, dan Sunset tetap didukung.
+- Lima tema harus memakai token semantik yang konsisten untuk latar, permukaan, teks, border, aksen, fokus, dan status.
+- Dashboard memprioritaskan akses Daftar RO dan, untuk Administrator, Buat RO. Angka yang ditampilkan terbatas pada jumlah master yang tersedia dari view; tidak boleh mengarang jumlah Draft/Terkirim atau metrik produksi.
+- Shadow bukan dekorasi default; ikon hanya digunakan jika menambah kejelasan.
+- Penyegaran visual tidak boleh mengubah aturan bisnis, role, alur transaksi, atau skema database.
+
+Kriteria penerimaan:
+44. Arah visual terdokumentasi pada `DESIGN.md`.
+45. Kelima tema menggunakan token semantik yang sama dan mempertahankan hierarki visual.
+46. Dashboard menampilkan akses Daftar RO dan menampilkan Buat RO hanya bagi Administrator yang memiliki izin transaksi tersebut.
+47. Dashboard hanya menampilkan jumlah master yang bersumber dari data aplikasi.
+48. Komponen utama menggunakan permukaan datar dan ikon secara fungsional, bukan dekoratif.
+49. Verifikasi visual harus mencakup lima tema serta breakpoint desktop, tablet, dan mobile sebelum dinyatakan lulus.
