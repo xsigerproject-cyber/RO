@@ -76,6 +76,7 @@ def _create_backup():
     ])
     if not path.exists() or path.stat().st_size == 0:
         raise RuntimeError("File backup tidak terbentuk atau kosong.")
+    _run_db_command(["pg_restore", "--list", str(path)], timeout=120)
     return path
 
 
