@@ -38,3 +38,6 @@ textarea.form-control { min-height: 100px; }
   .theme-btn { width: 17px; height: 17px; }
   #layoutSidenav_content main { padding-left: 1rem !important; padding-right: 1rem !important; }
 }
+.user-anonymous #layoutSidenav_nav { display: none; }
+.user-anonymous #layoutSidenav_content { margin-left: 0; }
+.user-anonymous #layoutSidenav { min-height: 100vh; }
