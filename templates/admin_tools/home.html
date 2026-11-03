@@ -10,6 +10,7 @@
 </div>
 <div class="row g-3">
   <div class="col-md-4"><a class="card card-body h-100 text-decoration-none" href="{% url 'admin_user_list' %}"><h5><i class="fas fa-users me-2"></i>Manajemen User</h5><p class="text-muted mb-0">CRUD akun, role, status, dan reset password.</p></a></div>
+  <div class="col-md-4"><a class="card card-body h-100 text-decoration-none" href="{% url 'admin_role_list' %}"><h5><i class="fas fa-user-shield me-2"></i>Manajemen Role</h5><p class="text-muted mb-0">Buat grup, atur permission, dan pantau user per role.</p></a></div>
   <div class="col-md-4"><a class="card card-body h-100 text-decoration-none" href="{% url 'admin_backup' %}"><h5><i class="fas fa-database me-2"></i>Backup Database</h5><p class="text-muted mb-0">Buat dan unduh backup PostgreSQL.</p></a></div>
   <div class="col-md-4"><a class="card card-body h-100 text-decoration-none" href="{% url 'admin_restore' %}"><h5><i class="fas fa-clock-rotate-left me-2"></i>Restore Database</h5><p class="text-muted mb-0">Pulihkan database dari backup PostgreSQL.</p></a></div>
 </div>
