@@ -9,6 +9,10 @@
 | Status dokumen | Desain teknis berdasarkan implementasi repository |
 | Tanggal | 3 November 2026 |
 
+## Dokumen Terkait
+
+Alasan bisnis dan rekonstruksi keputusan percakapan dicatat pada [`doc/DECISION_LOG.md`](DECISION_LOG.md). Dokumen ini menjelaskan desain teknis; keputusan kebutuhan tetap merujuk pada PRD.
+
 ## 1. Tujuan Dokumen
 
 DDS menjelaskan struktur teknis, komponen, model data, alur proses, endpoint, keamanan, dan deployment aplikasi berdasarkan source code repository. Detail yang belum diimplementasikan ditandai sebagai catatan, bukan diasumsikan tersedia.
