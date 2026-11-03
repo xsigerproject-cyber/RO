@@ -367,3 +367,11 @@ Kriteria penerimaan tambahan:
 - Pencarian tidak membedakan huruf besar/kecil dan mencocokkan nama permission, nama model, nama aplikasi, serta codename.
 - Contoh kata kunci `view` menampilkan permission yang mengandung kata tersebut.
 - Filter hanya menyembunyikan/menampilkan pilihan di browser; pilihan checkbox yang sudah dicentang tetap dipertahankan saat filter berubah.
+
+
+### 13.2 Tombol penerapan filter permission
+- Filter permission tidak diterapkan otomatis saat pengguna mengetik.
+- Administrator mengetik kata kunci lalu menekan tombol **Filter** untuk menampilkan permission yang cocok.
+- Tombol **Bersihkan** menghapus kata kunci dan menampilkan kembali seluruh permission.
+- Tombol Enter pada kolom filter menjalankan aksi Filter.
+- Status checkbox permission yang sudah dipilih tetap dipertahankan saat daftar disaring.
