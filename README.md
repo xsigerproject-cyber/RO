@@ -1,6 +1,6 @@
 # Master Data CRUD
 
-Aplikasi CRUD Master Data berbasis Django, PostgreSQL, Docker, dan Bootstrap 5.
+Aplikasi CRUD Master Data berbasis Django, PostgreSQL, Docker, dan Bootstrap 5 dengan antarmuka Start Bootstrap SB Admin 7.0.7.
 
 ## Fitur
 - CRUD Dapur, Jadwal, Toko, dan Template Produk.
@@ -34,3 +34,11 @@ Toko: `kode_toko,nama_toko`.
 Template Produk: `kode_produk,nama_produk,kode_dapur`.
 
 Baris pertama harus berupa header. Untuk template produk, kode_dapur harus sudah ada di master Dapur.
+
+
+## Frontend
+- Admin dashboard menggunakan [Start Bootstrap SB Admin 7.0.7](https://github.com/StartBootstrap/startbootstrap-sb-admin).
+- Layout Django berada di `templates/base.html`; halaman dashboard dan master data berada di `templates/masterdata/`.
+- Asset SB Admin 7.0.7 dimuat melalui CDN; penyesuaian RO berada di `static/css/sb-admin-overrides.css`.
+- Tema Light, Dark, Ocean, Forest, dan Sunset tetap tersedia.
+- SB Admin dirilis dengan lisensi MIT. Salinan pemberitahuan lisensi disertakan pada `licenses/SB-ADMIN-MIT-LICENSE.txt`.
