@@ -599,3 +599,10 @@ Belum ada hasil eksekusi test atau restore runtime yang diklaim oleh dokumen ini
 - Filter mencocokkan teks permission, app/model, dan codename secara case-insensitive.
 - Opsi yang tidak cocok disembunyikan tanpa mengubah status checked, sehingga permission yang sudah dipilih tidak hilang saat difilter.
 - Tidak ada perubahan endpoint, model, atau migration.
+
+
+### 15.12 Tombol Filter permission
+- Filter permission pada `templates/admin_tools/role_form.html` diterapkan saat tombol Filter diklik atau Enter ditekan pada input.
+- Tombol Bersihkan mengosongkan kata kunci dan mengembalikan seluruh pilihan.
+- Tidak ada penyaringan otomatis pada setiap event input.
+- Penyaringan hanya mengubah visibilitas opsi di browser; status checkbox tetap utuh.
