@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}Detail RO | RO{% endblock %}
+{% block content %}<h1 class="mt-2 mb-3">Detail RO</h1><div class="card"><div class="card-body"><p><strong>Tanggal RO:</strong> {{ first.tgl_ro|date:"d-m-Y" }} | <strong>Toko:</strong> {{ first.toko }} | <strong>Dapur:</strong> {{ first.dapur }} | <strong>Jadwal:</strong> {{ first.jadwal }}</p><div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Kode Produk</th><th>Nama Produk</th><th>Qty</th></tr></thead><tbody>{% for row in rows %}<tr><td>{{ row.produk_id }}</td><td>{{ row.produk.nama_produk }}</td><td>{{ row.qty_pesan }}</td></tr>{% endfor %}</tbody></table></div><a href="{% url 'ro_daftar' %}" class="btn btn-secondary">Kembali</a></div></div>{% endblock %}
