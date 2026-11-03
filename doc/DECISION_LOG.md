@@ -187,3 +187,38 @@ Disetujui sebagai kebutuhan/rancangan tahap berikutnya; belum diimplementasikan 
 
 **Referensi commit:**
 Diisi setelah perubahan dokumen ini tersimpan di repository.
+
+
+## 10. 2026-11-03 — Modul Administrasi User, Backup, dan Restore Database
+
+**Konteks/masalah:**
+Administrator membutuhkan satu area untuk mengelola akun dan memelihara database tanpa bergantung pada Django Admin atau akses shell untuk pekerjaan rutin.
+
+**Keputusan yang disetujui:**
+1. Sediakan modul Administrasi yang hanya dapat diakses grup Administrator dan superuser.
+2. Modul menyediakan CRUD user, pengaturan grup/role, status aktif, pemetaan Toko untuk Admin Toko, serta penggantian password user.
+3. User baru dibuat dengan password unusable sampai Administrator menetapkan password.
+4. Akun sendiri tidak dapat dihapus atau dinonaktifkan; superuser tidak dapat dihapus dari modul; superuser hanya dapat diubah oleh superuser.
+5. Administrator aktif terakhir tidak boleh dihapus, dinonaktifkan, atau kehilangan role Administrator.
+6. Backup database menggunakan PostgreSQL custom dump (`pg_dump -Fc`) dan disimpan pada named volume Docker terpisah dari volume database.
+7. Restore menerima custom dump, mewajibkan konfirmasi `RESTORE DATABASE`, membuat backup otomatis sebelum restore, dan menjalankan `pg_restore` dalam single transaction.
+8. Backup pada host yang sama bukan backup off-site; file backup perlu disalin ke lokasi terpisah.
+9. Restore harus diuji di staging sebelum dipakai di produksi.
+
+**Alasan:**
+Pengelolaan user dan database merupakan fungsi administratif sensitif. Pemisahan akses, perlindungan akun administrator terakhir, backup otomatis sebelum restore, serta transaksi tunggal mengurangi risiko kehilangan akses dan kerusakan data parsial.
+
+**Dampak PRD:**
+Menambahkan kebutuhan manajemen user, backup, restore, pengamanan, batasan operasional, dan kriteria penerimaan.
+
+**Dampak DDS/DDL/database:**
+Menambahkan rancangan modul, endpoint, proses pg_dump/pg_restore, lokasi volume backup, otorisasi, dan daftar verifikasi. Tidak ada tabel database baru yang diperlukan untuk fungsi ini.
+
+**Dampak kode/migration:**
+Menambahkan `admin_forms.py`, `admin_views.py`, template `templates/admin_tools/`, endpoint `admin-tools/`, context processor menu Administrator, paket `postgresql16-client` pada image web, dan named volume `db_backups` pada Docker Compose. Tidak ada migration model baru.
+
+**Status implementasi dan pengujian:**
+Kode awal telah ditambahkan ke branch main. Belum ada bukti build Docker, pengujian Django, backup aktual, atau restore pada lingkungan target. Verifikasi runtime dan uji restore staging wajib dilakukan sebelum produksi.
+
+**Referensi commit:**
+Lihat riwayat commit branch `main` pada repository; perubahan dilakukan dalam beberapa commit bertahap.
