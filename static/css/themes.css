@@ -115,3 +115,8 @@ textarea.form-control { min-height: 100px; }
   .workflow-actions .btn { flex: 1 1 9rem; }
   .master-overview__item { padding: .9rem; }
 }
+
+/* Header controls inherit the selected theme instead of fixed utility colors. */
+.sb-topnav .text-white,
+.sb-topnav .btn-link { color: var(--navbar-text) !important; }
+.sb-topnav .btn-link:hover { color: var(--accent-color) !important; }
