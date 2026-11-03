@@ -1,8 +1,74 @@
 {% extends "base.html" %}
 {% block title %}Daftar RO | RO{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4"><div><h1 class="mt-2 mb-1">Daftar RO</h1><div class="text-muted">Daftar transaksi sesuai hak akses akun.</div></div><a class="btn btn-primary" href="{% url 'ro_transaksi' %}"><i class="fas fa-plus me-1"></i> Buat RO</a></div>
-<div class="card"><div class="card-body table-responsive"><table class="table table-bordered table-hover align-middle"><thead class="table-light"><tr><th>Tanggal RO</th><th>Toko</th><th>Dapur</th><th>Jadwal</th><th>Tanggal Kirim</th><th>Produk</th><th>Qty</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
-{% regroup rows by tgl_ro as tanggal_list %}{% for tanggal in tanggal_list %}{% for row in tanggal.list %}<tr><td>{{ row.tgl_ro|date:"d-m-Y" }}</td><td>{{ row.toko }}</td><td>{{ row.dapur }}</td><td>{{ row.jadwal }}</td><td>{{ row.tgl_kirim|date:"d-m-Y" }}</td><td>{{ row.produk.kode_produk }} - {{ row.produk.nama_produk }}</td><td>{{ row.qty_pesan }}</td><td>{% if row.status_ro == 1 %}<span class="badge text-bg-warning">Draft</span>{% else %}<span class="badge text-bg-success">Terkirim</span>{% endif %}</td><td>{% if row.status_ro == 1 %}<a class="btn btn-sm btn-outline-primary" href="{% url 'ro_transaksi' %}?toko={{ row.toko_id }}&dapur={{ row.dapur_id }}&tgl_ro={{ row.tgl_ro|date:'Y-m-d' }}&tgl_kirim={{ row.tgl_kirim|date:'Y-m-d' }}&jadwal={{ row.jadwal_id }}">Buka Draft</a>{% else %}<span class="text-muted small">Terkunci</span>{% endif %}</td></tr>{% empty %}{% endfor %}{% empty %}<tr><td colspan="9" class="text-center text-muted py-4">Belum ada transaksi RO.</td></tr>{% endfor %}
-</tbody></table></div></div>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+  <div><h1 class="mt-2 mb-1">Daftar RO</h1><div class="text-muted">Daftar transaksi sesuai hak akses akun.</div></div>
+  <a class="btn btn-primary" href="{% url 'ro_transaksi' %}"><i class="fas fa-plus me-1"></i> Buat RO</a>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header"><i class="fas fa-filter me-1"></i> Filter Daftar RO</div>
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-6 col-lg">
+        <label for="filter-tgl-ro" class="form-label">Tanggal RO</label>
+        <input id="filter-tgl-ro" type="date" name="tgl_ro" class="form-control" value="{{ filters.tgl_ro }}">
+      </div>
+      <div class="col-md-6 col-lg">
+        <label for="filter-toko" class="form-label">Toko</label>
+        <select id="filter-toko" name="toko" class="form-select">
+          <option value="">Semua Toko</option>
+          {% for toko in toko_options %}<option value="{{ toko.pk }}" {% if filters.toko == toko.pk|stringformat:"s" %}selected{% endif %}>{{ toko.kode_toko }} - {{ toko.nama_toko }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6 col-lg">
+        <label for="filter-dapur" class="form-label">Dapur</label>
+        <select id="filter-dapur" name="dapur" class="form-select">
+          <option value="">Semua Dapur</option>
+          {% for dapur in dapur_options %}<option value="{{ dapur.pk }}" {% if filters.dapur == dapur.pk|stringformat:"s" %}selected{% endif %}>{{ dapur.kode_dapur }} - {{ dapur.nama_dapur }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6 col-lg">
+        <label for="filter-jadwal" class="form-label">Jadwal</label>
+        <select id="filter-jadwal" name="jadwal" class="form-select">
+          <option value="">Semua Jadwal</option>
+          {% for jadwal in jadwal_options %}<option value="{{ jadwal.pk }}" {% if filters.jadwal == jadwal.pk|stringformat:"s" %}selected{% endif %}>{{ jadwal.kode_jadwal }} - {{ jadwal.jadwal_kirim }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6 col-lg">
+        <label for="filter-tgl-kirim" class="form-label">Tanggal Kirim</label>
+        <input id="filter-tgl-kirim" type="date" name="tgl_kirim" class="form-control" value="{{ filters.tgl_kirim }}">
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-search me-1"></i> Terapkan Filter</button>
+        <a href="{% url 'ro_daftar' %}" class="btn btn-outline-secondary">Reset</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+      <thead class="table-light"><tr><th>Tanggal RO</th><th>Toko</th><th>Dapur</th><th>Jadwal</th><th>Tanggal Kirim</th><th>Produk</th><th>Qty</th><th>Status</th><th>Aksi</th></tr></thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td>{{ row.tgl_ro|date:"d-m-Y" }}</td>
+          <td>{{ row.toko }}</td>
+          <td>{{ row.dapur }}</td>
+          <td>{{ row.jadwal }}</td>
+          <td>{{ row.tgl_kirim|date:"d-m-Y" }}</td>
+          <td>{{ row.produk.kode_produk }} - {{ row.produk.nama_produk }}</td>
+          <td>{{ row.qty_pesan }}</td>
+          <td>{% if row.status_ro == 1 %}<span class="badge text-bg-warning">Draft</span>{% else %}<span class="badge text-bg-success">Terkirim</span>{% endif %}</td>
+          <td>{% if row.status_ro == 1 %}<a class="btn btn-sm btn-outline-primary" href="{% url 'ro_transaksi' %}?toko={{ row.toko_id }}&dapur={{ row.dapur_id }}&tgl_ro={{ row.tgl_ro|date:'Y-m-d' }}&tgl_kirim={{ row.tgl_kirim|date:'Y-m-d' }}&jadwal={{ row.jadwal_id }}">Buka Draft</a>{% else %}<span class="text-muted small">Terkunci</span>{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" class="text-center text-muted py-4">Tidak ada transaksi RO yang sesuai dengan filter.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}
