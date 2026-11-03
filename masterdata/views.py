@@ -302,16 +302,20 @@ def download_import_template(request, kind):
     ]
     ws.append(headers)
 
-    # Baris contoh memakai penanda pada primary key agar dilewati saat import.
-    sample_rows = {
-        "dapur": ["__CONTOH__", "Nama Dapur Contoh", "Tipe Operasional", "Dokumen Contoh"],
-        "jadwal": ["__CONTOH__", "Senin - Jumat"],
-        "toko": ["__CONTOH__", "Nama Toko Contoh"],
-        "produk": ["__CONTOH__", "Nama Produk Contoh", "__CONTOH__"],
-    }
-    ws.append(sample_rows[kind])
+    # Gunakan record pertama dari tabel sebagai baris contoh.
+    # Urutan mengikuti primary key terkecil agar hasil konsisten.
+    sample_obj = model.objects.order_by(model._meta.pk.name).first()
+    if sample_obj is not None:
+        sample_row = []
+        for field_name in fields:
+            if field_name == "dapur":
+                value = sample_obj.dapur_id
+            else:
+                value = getattr(sample_obj, field_name, "")
+            sample_row.append(value if value is not None else "")
+        ws.append(sample_row)
 
-    # Format header dan baris contoh agar mudah dibedakan.
+    # Format header dan baris contoh jika tersedia.
     from openpyxl.styles import Font, PatternFill, Alignment
     from openpyxl.comments import Comment
 
@@ -326,26 +330,37 @@ def download_import_template(request, kind):
     for column_cells in ws.columns:
         column_letter = column_cells[0].column_letter
         header_length = len(str(column_cells[0].value or ""))
+        sample_length = max(
+            (len(str(cell.value or "")) for cell in column_cells[1:]),
+            default=0,
+        )
         ws.column_dimensions[column_letter].width = max(
-            18, min(header_length + 5, 32)
+            18, min(max(header_length, sample_length) + 5, 40)
         )
 
-    for cell in ws[2]:
-        cell.font = Font(italic=True, color="666666")
-        cell.fill = PatternFill(fill_type="solid", fgColor="FFF2CC")
-        cell.alignment = Alignment(vertical="center")
-        cell.comment = Comment(
-            "BARIS CONTOH: ganti dengan data sebenarnya. Baris ini otomatis dilewati saat Import selama kode primary key tetap __CONTOH__.",
-            "RO",
-        )
+    if sample_obj is not None:
+        for cell in ws[2]:
+            cell.font = Font(italic=True, color="666666")
+            cell.fill = PatternFill(fill_type="solid", fgColor="FFF2CC")
+            cell.alignment = Alignment(vertical="center")
+            cell.comment = Comment(
+                "BARIS CONTOH: diambil dari record pertama pada tabel. "
+                "Boleh diubah atau dihapus sebelum import. Jika diimpor "
+                "tanpa perubahan, data dengan kode yang sama akan diperbarui, "
+                "bukan dibuat sebagai duplikat.",
+                "RO",
+            )
 
     ws.freeze_panes = "A2"
-    ws.auto_filter.ref = f"A1:{ws.cell(row=2, column=len(headers)).coordinate}"
+    last_row = 2 if sample_obj is not None else 1
+    ws.auto_filter.ref = (
+        f"A1:{ws.cell(row=last_row, column=len(headers)).coordinate}"
+    )
 
     if kind == "produk":
         dapur_column = headers.index("kode_dapur") + 1
         ws.cell(row=1, column=dapur_column).comment = Comment(
-            "Isi dengan kode_dapur yang sudah terdaftar pada Master Dapur.",
+            "Nilai berisi kode_dapur yang terhubung dengan produk contoh.",
             "RO",
         )
 
