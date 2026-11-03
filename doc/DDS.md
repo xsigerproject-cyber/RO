@@ -612,3 +612,25 @@ Belum ada hasil eksekusi test atau restore runtime yang diklaim oleh dokumen ini
 - Jangan memanggil `self.save_m2m()` setelah `super().save(commit=True)`; Django hanya menyediakan helper `save_m2m()` pada instance ketika `save(commit=False)` dipakai.
 - Setelah user tersimpan, buat/perbarui `UserProfile.toko` seperti sebelumnya. Tidak ada perubahan model atau migration.
 - Verifikasi: tambah user dengan role Admin Toko dan Toko terpilih; pastikan user dan relasi Group serta `UserProfile.toko` tersimpan. Uji juga role non-Admin Toko tanpa pemetaan Toko.
+
+
+## 16. Standar Visual Frontend dan Dashboard
+
+### 16.1 Arah Visual
+Acuan visual ditetapkan dalam root `DESIGN.md`. Dokumen tersebut menjelaskan karakter produk, tipografi, warna, komponen, hierarki, aksesibilitas, dan batasan penyegaran UI.
+
+### 16.2 Sistem Tema
+- `static/css/themes.css` menyediakan token semantik untuk Light, Dark, Ocean, Forest, dan Sunset.
+- Token mencakup latar, permukaan, teks utama/sekunder, border, aksen, fokus, status, input, navbar, dan sidebar.
+- Komponen umum menggunakan token tersebut agar tidak bergantung pada warna tema tertentu.
+- `static/css/sb-admin-overrides.css` menangani struktur shell dan kontrol pemilih tema.
+- Tema tetap disimpan melalui mekanisme UserProfile dan endpoint `/theme/set/`; perubahan ini tidak mengubah backend atau model.
+
+### 16.3 Dashboard
+- View dashboard tetap menyediakan hitungan Dapur, Jadwal, Toko, dan Template Produk.
+- Template menampilkan Daftar RO sebagai akses transaksi utama.
+- Tombol Buat RO hanya ditampilkan untuk Administrator/superuser melalui flag `is_administrator_user`, karena endpoint transaksi RO tidak mengizinkan Admin Produksi membuat RO.
+- Dashboard tidak menampilkan metrik Draft/Terkirim atau agregat produksi karena view saat ini belum menyediakannya.
+
+### 16.4 Batasan Verifikasi
+Perubahan CSS dan template telah disimpan pada branch `main`. Belum dilakukan browser rendering, click-through, pengukuran kontras otomatis, atau pengujian visual pada lima tema dan breakpoint. Karena itu, konsistensi aktual seluruh komponen belum boleh dinyatakan lulus.
