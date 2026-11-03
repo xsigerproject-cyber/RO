@@ -110,14 +110,12 @@ def user_list(request):
 def user_create(request):
     form = AdminUserForm(request.POST or None)
     if request.method == "POST":
-        username = request.POST.get("username", "")
         if form.is_valid():
             user = form.save()
             user.set_unusable_password()
             user.save(update_fields=["password"])
             messages.success(request, f"User {user.username} berhasil dibuat. Atur password melalui menu Ganti Password.")
-            return redirect("admin_user_list")
-    return render(request, "admin_tools/user_form.html", {"form": form, "page_title": "Tambah User"})
+        return render(request, "admin_tools/user_form.html", {"form": form, "page_title": "Tambah User"})
 
 
 @_admin_only
