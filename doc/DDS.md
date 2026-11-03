@@ -482,3 +482,80 @@ Inisialisasi hanya mengosongkan data RO dan Template Produk. Jangan menghapus/tr
 - Verifikasi backup dan prosedur restore secara terpisah.
 
 Belum ada URL, nama view, model audit, atau migration yang ditetapkan. Detail implementasi ditentukan saat pekerjaan kode dimulai dan harus diselaraskan dengan source code/migration aktual.
+
+
+## 15. Modul Administrasi User, Backup, dan Restore
+
+<badge>Implementasi awal pada branch main; verifikasi runtime belum dilakukan</badge>
+
+### 15.1 Struktur Source
+
+| Path | Tanggung jawab |
+|---|---|
+| `masterdata/admin_forms.py` | Form CRUD user dan validasi password |
+| `masterdata/admin_views.py` | Otorisasi Administrator, CRUD user, backup, restore |
+| `masterdata/urls.py` | Endpoint `admin-tools/` |
+| `masterdata/context_processors.py` | Flag tampilan menu Administrator |
+| `templates/admin_tools/` | Dashboard administrasi, user, backup, restore |
+| `templates/base.html` | Menu Administrasi khusus Administrator |
+
+### 15.2 Otorisasi
+- Decorator `_admin_only` memeriksa login dan `is_administrator(user)` untuk setiap view.
+- `is_administrator` mengizinkan grup Administrator atau superuser.
+- Endpoint mutasi menggunakan POST dan CSRF middleware Django.
+- Menu sidebar menggunakan context processor `administrator_context`; menu tersembunyi bagi role lain. Ini hanya kontrol UI, sedangkan view tetap memeriksa izin server-side.
+
+### 15.3 User Management
+- Menggunakan Django User dan Group; tidak membuat tabel user baru.
+- Form mengelola username, first/last name, email, is_active, groups, dan pemetaan `UserProfile.toko`.
+- Jika grup Admin Toko dipilih, Toko wajib diisi. Jika bukan Admin Toko, field Toko harus kosong.
+- User baru diberi unusable password; Administrator mengatur password lewat endpoint terpisah.
+- Password divalidasi dengan `validate_password` dan disimpan melalui `set_password`.
+- Akun sendiri tidak dapat dihapus; akun superuser tidak dapat dihapus melalui modul; hanya superuser dapat mengubah/mengganti password superuser.
+- Perlindungan Administrator aktif terakhir diterapkan untuk menghindari kehilangan seluruh akses administrasi.
+
+### 15.4 Backup
+- Image web memasang paket Alpine `postgresql16-client`.
+- `pg_dump --format=custom --file <path>` dijalankan dengan kredensial dan koneksi database dari `settings.DATABASES["default"]`.
+- Lokasi default: `/var/backups/ro`, dapat diubah melalui `DB_BACKUP_DIR`.
+- Compose memasang named volume `db_backups` ke lokasi tersebut; volume ini terpisah dari `postgres_data`.
+- Nama file mengikuti pola `ro_db_YYYYMMDD_HHMMSS_<8-hex>.dump`; hanya file yang cocok pola ini ditampilkan/diunduh.
+- Unduhan menggunakan FileResponse dan validasi nama file.
+
+### 15.5 Restore
+1. Validasi user Administrator, POST, CSRF, ekstensi `.dump`, ukuran maksimum 1 GiB, dan konfirmasi `RESTORE DATABASE`.
+2. Salin upload ke file sementara dengan nama UUID di direktori backup.
+3. Jalankan `pg_restore --list` untuk memeriksa format arsip.
+4. Buat backup otomatis database aktif.
+5. Jalankan `pg_restore --clean --if-exists --no-owner --no-privileges --exit-on-error --single-transaction --dbname <database> <archive>`.
+6. Hapus file upload sementara pada blok finally.
+7. Jika perintah gagal, catat detail pada log server dan tampilkan pesan umum; transaksi restore menggunakan single transaction.
+
+**Catatan:** file backup dan upload restore mengandung seluruh data database termasuk data personal dan kredensial hash. Batasi akses server/volume dan jangan mengirim backup melalui kanal publik. File yang hanya ada pada volume `db_backups` tetap berada di host yang sama; salinan off-site diperlukan untuk mitigasi kehilangan server.
+
+### 15.6 Endpoint
+| Method | URL | Name | Fungsi |
+|---|---|---|---|
+| GET | `/admin-tools/` | admin_home | Dashboard administrasi |
+| GET | `/admin-tools/users/` | admin_user_list | Daftar user |
+| GET/POST | `/admin-tools/users/add/` | admin_user_create | Tambah user |
+| GET/POST | `/admin-tools/users/<id>/edit/` | admin_user_edit | Ubah user |
+| GET/POST | `/admin-tools/users/<id>/password/` | admin_user_password | Ganti password |
+| POST | `/admin-tools/users/<id>/delete/` | admin_user_delete | Hapus user |
+| GET | `/admin-tools/backup/` | admin_backup | Daftar backup |
+| POST | `/admin-tools/backup/create/` | admin_backup_create | Buat backup |
+| GET | `/admin-tools/backup/download/<filename>/` | admin_backup_download | Unduh backup |
+| GET | `/admin-tools/restore/` | admin_restore | Form restore |
+| POST | `/admin-tools/restore/execute/` | admin_restore_execute | Jalankan restore |
+
+### 15.7 Verifikasi Sebelum Produksi
+- Jalankan `docker compose build web` untuk memastikan paket PostgreSQL client tersedia.
+- Jalankan `python manage.py check` dan uji seluruh URL/template.
+- Uji akses Administrator, superuser, Admin Toko, Admin Produksi, Admin Master, Editor Master, Viewer, dan anonymous.
+- Uji CRUD user, mapping Toko Admin Toko, password tidak valid/valid, perlindungan akun sendiri, superuser, dan Administrator aktif terakhir.
+- Buat backup dan pastikan file dapat diunduh serta ukurannya masuk akal.
+- Restore backup pada database staging terpisah; verifikasi tabel, relasi, akun, dan data.
+- Uji restore dengan file rusak dan pastikan database tidak berubah parsial.
+- Jangan melakukan uji restore pertama kali pada database produksi.
+
+Belum ada hasil eksekusi test atau restore runtime yang diklaim oleh dokumen ini.
