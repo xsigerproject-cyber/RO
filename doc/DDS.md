@@ -408,3 +408,77 @@ Sinkronisasi dijalankan saat halaman transaksi Draft dibuka dan sebelum Draft di
 - Mengaktifkan kembali produk menggunakan record Template Produk yang sama.
 - Verifikasi yang perlu dilakukan pada lingkungan target: migration, form tambah/edit Template Produk, impor/ekspor status, sinkronisasi produk aktif/nonaktif pada Draft, dan kekekalan RO Terkirim.
 - Pembaruan repository ini belum merupakan bukti bahwa migration atau pengujian telah dijalankan pada server produksi.
+
+
+## 14. Desain Fitur Administrasi Data dan Inisialisasi (Rencana)
+
+<badge>Desain; belum diimplementasikan</badge>
+
+Bagian ini adalah rancangan fitur pembersihan data testing sebelum Go-Live, bukan deskripsi endpoint atau kode yang sudah tersedia.
+
+### 14.1 Otorisasi
+
+- Buat pemeriksaan izin khusus Administrator sesuai definisi peran RO pada PRD.
+- Pemeriksaan dilakukan pada setiap view/action di server-side. Jangan menggunakan `can_delete` atau `can_manage` sebagai pengganti izin Administrator.
+- Superuser boleh dianggap memiliki izin Administrator.
+- Semua operasi mutasi menggunakan POST dan CSRF protection.
+- Akses tanpa izin menghasilkan HTTP 403.
+
+### 14.2 Penghapusan Template Produk
+
+Sediakan tiga cakupan: satu produk, seluruh produk pada satu Dapur, dan seluruh Template Produk.
+
+Untuk setiap cakupan:
+1. Ambil target berdasarkan kode produk/Dapur atau seluruh queryset.
+2. Hitung jumlah target dan jumlah target yang masih direferensikan oleh RO.
+3. Tampilkan halaman konfirmasi berisi cakupan, jumlah target, dan informasi blokir referensi.
+4. Jika ada referensi RO, tolak penghapusan tanpa mengubah data.
+5. Jika tidak ada referensi, hapus target dalam `transaction.atomic()`.
+6. Catat tindakan pada audit log yang dipertahankan.
+
+Jangan memakai cascade yang menghapus RO secara implisit. Relasi `PROTECT` tetap menjadi pengaman integritas data.
+
+### 14.3 Inisialisasi Data Testing
+
+Urutan operasi dalam satu `transaction.atomic()`:
+1. Validasi pemanggil adalah Administrator.
+2. Validasi metode POST, CSRF, dan nilai konfirmasi persis `RESET DATA`.
+3. Hitung jumlah baris RO dan Template Produk untuk ringkasan.
+4. Hapus seluruh baris RO, termasuk Draft dan Terkirim.
+5. Hapus seluruh Template Produk.
+6. Simpan catatan audit berisi pelaku, timestamp, jenis tindakan, dan jumlah record yang dihapus.
+7. Commit transaksi.
+
+Jika penghapusan atau pencatatan audit gagal, rollback seluruh transaksi. Implementasi audit harus memastikan catatan inisialisasi tidak ikut terhapus; catatan dapat dibuat setelah penghapusan target dalam transaksi yang sama atau disimpan pada sistem log terpisah.
+
+### 14.4 Data yang Dipertahankan
+
+Inisialisasi hanya mengosongkan data RO dan Template Produk. Jangan menghapus/truncate Dapur, Jadwal, Toko, User, Group/Permission, UserProfile, konfigurasi aplikasi, migration history, maupun log audit yang harus dipertahankan. Jangan menjalankan `flush`, menghapus schema/database, menghapus volume Docker, atau mereset sequence secara otomatis.
+
+### 14.5 Backup dan Pemulihan
+
+- UI memberi peringatan untuk membuat backup PostgreSQL penuh sebelum tindakan.
+- Backup harus dapat dipulihkan; membuat file backup saja bukan bukti pemulihan.
+- Ekspor XLSX tidak mempertahankan seluruh relasi, akun, permission, dan konfigurasi sehingga bukan pengganti backup PostgreSQL.
+- Prosedur restore dilakukan di luar fitur reset sesuai prosedur operasional database.
+
+### 14.6 Rancangan UI
+
+- Tambahkan menu khusus Administrator, misalnya **Administrasi Data**.
+- Pisahkan area **Hapus Template Produk** dari **Inisialisasi Data Testing**.
+- Setiap tindakan menampilkan jumlah data terdampak dan konfirmasi sebelum eksekusi.
+- Inisialisasi menggunakan input konfirmasi teks `RESET DATA`.
+- Setelah berhasil, tampilkan ringkasan jumlah RO dan Template Produk yang dihapus serta referensi log audit.
+
+### 14.7 Pengujian Wajib Sebelum Rilis
+
+- Uji akses Administrator, superuser, Admin Master, Editor Master, Viewer, Admin Toko, dan Admin Produksi sesuai role yang berlaku.
+- Uji penghapusan produk tanpa RO dan produk yang masih direferensikan RO.
+- Uji hapus per Dapur dan hapus seluruh Template Produk, termasuk kondisi referensi RO campuran.
+- Uji reset ketika ada Draft saja, Terkirim saja, dan keduanya.
+- Pastikan Dapur, Jadwal, Toko, user, grup, permission, UserProfile, migration history, dan audit log tetap ada.
+- Simulasikan kegagalan setelah penghapusan RO untuk memastikan rollback mengembalikan RO dan Template Produk.
+- Uji konfirmasi kosong/salah, request GET, CSRF gagal, dan akses langsung tanpa izin.
+- Verifikasi backup dan prosedur restore secara terpisah.
+
+Belum ada URL, nama view, model audit, atau migration yang ditetapkan. Detail implementasi ditentukan saat pekerjaan kode dimulai dan harus diselaraskan dengan source code/migration aktual.
