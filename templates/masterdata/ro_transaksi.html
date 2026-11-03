@@ -20,6 +20,11 @@
   <div class="col-12"><button class="btn btn-primary" type="submit"><i class="fas fa-search me-1"></i> Cari / Tampilkan Produk</button></div>
 </form>
 </div></div>
+{% if selection_invalid_date %}
+<div class="alert alert-warning">Tanggal RO dan Tanggal Kirim harus diisi dengan tanggal yang valid. Produk belum ditampilkan.</div>
+{% elif not selected %}
+<div class="alert alert-secondary"><i class="fas fa-info-circle me-1"></i> Lengkapi Toko, Dapur, Tanggal RO, Tanggal Kirim, dan Jadwal, lalu klik <strong>Cari / Tampilkan Produk</strong>. Produk dan kolom Qty baru akan muncul setelah seluruh parameter terisi.</div>
+{% endif %}
 {% if selected %}
 <div class="alert alert-info mb-3">
   RO: <strong>{{ selected.toko }}</strong> · <strong>{{ selected.dapur }}</strong> · {{ selected.tgl_ro|date:"d-m-Y" }} · {{ selected.jadwal }} · Kirim {{ selected.tgl_kirim|date:"d-m-Y" }}.
