@@ -29,6 +29,29 @@ def _ro_queryset(user):
     return qs
 
 
+def _sync_draft_products(toko, tgl_ro, dapur, jadwal, user, tgl_kirim):
+    """Sinkronkan Draft dengan whitelist Template Produk yang aktif."""
+    key = {"toko": toko, "tgl_ro": tgl_ro, "dapur": dapur, "jadwal": jadwal}
+    draft_rows = RO.objects.filter(**key, status_ro=RO.STATUS_DRAFT)
+    active_ids = set(TemplateProduk.objects.filter(
+        dapur=dapur, is_active=True
+    ).values_list("pk", flat=True))
+
+    # Produk nonaktif dihapus hanya dari Draft; RO Terkirim tetap utuh.
+    draft_rows.exclude(produk_id__in=active_ids).delete()
+    existing_ids = set(draft_rows.values_list("produk_id", flat=True))
+    new_rows = [
+        RO(
+            toko=toko, tgl_ro=tgl_ro, tgl_kirim=tgl_kirim,
+            dapur=dapur, jadwal=jadwal, produk_id=product_id,
+            qty_pesan=0, status_ro=RO.STATUS_DRAFT, dibuat_oleh=user,
+        )
+        for product_id in active_ids - existing_ids
+    ]
+    if new_rows:
+        RO.objects.bulk_create(new_rows)
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def ro_transaksi(request):
@@ -71,22 +94,13 @@ def ro_transaksi(request):
                 if existing.filter(status_ro=RO.STATUS_SENT).exists():
                     raise ValidationError("RO ini sudah Terkirim dan tidak dapat diubah.")
 
-                if existing.exists():
-                    items = list(existing.select_related("produk"))
-                else:
-                    templates = list(TemplateProduk.objects.filter(dapur=dapur).order_by("kode_produk"))
-                    if not templates:
-                        raise ValidationError("Belum ada Template Produk untuk Dapur yang dipilih.")
-                    items = [
-                        RO(
-                            toko=toko, tgl_ro=tgl_ro, tgl_kirim=tgl_kirim,
-                            dapur=dapur, jadwal=jadwal, produk=product,
-                            qty_pesan=0, status_ro=RO.STATUS_DRAFT,
-                            dibuat_oleh=request.user,
-                        )
-                        for product in templates
-                    ]
-                    RO.objects.bulk_create(items)
+                _sync_draft_products(toko, tgl_ro, dapur, jadwal, request.user, tgl_kirim)
+                items = list(RO.objects.select_for_update().filter(
+                    tgl_ro=tgl_ro, toko=toko, dapur=dapur, jadwal=jadwal,
+                    status_ro=RO.STATUS_DRAFT,
+                ).select_related("produk").order_by("produk__kode_produk"))
+                if not items:
+                    raise ValidationError("Tidak ada Template Produk berstatus Aktif untuk Dapur yang dipilih.")
 
                 if existing.exists() and any(item.tgl_kirim != tgl_kirim for item in items):
                     for item in items:
@@ -145,11 +159,20 @@ def ro_transaksi(request):
             tgl_ro=selected_date, toko=selected_toko,
             dapur=selected_dapur, jadwal=selected_jadwal,
         ).select_related("produk").order_by("produk__kode_produk"))
-        if existing_rows:
+        if existing_rows and existing_rows[0].status_ro == RO.STATUS_SENT:
             items = existing_rows
-            read_only = existing_rows[0].status_ro == RO.STATUS_SENT
+            read_only = True
         else:
-            items = list(TemplateProduk.objects.filter(dapur=selected_dapur).order_by("kode_produk"))
+            with transaction.atomic():
+                _sync_draft_products(
+                    selected_toko, selected_date, selected_dapur,
+                    selected_jadwal, request.user, selected_ship_date,
+                )
+            items = list(RO.objects.filter(
+                tgl_ro=selected_date, toko=selected_toko,
+                dapur=selected_dapur, jadwal=selected_jadwal,
+                status_ro=RO.STATUS_DRAFT,
+            ).select_related("produk").order_by("produk__kode_produk"))
 
     context = {
         "items": items,
