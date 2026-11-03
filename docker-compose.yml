@@ -17,6 +17,10 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
+    environment:
+      DB_BACKUP_DIR: /var/backups/ro
+    volumes:
+      - db_backups:/var/backups/ro
     ports:
       - "7070:8000"
     depends_on:
@@ -24,3 +28,4 @@ services:
         condition: service_healthy
 volumes:
   postgres_data:
+  db_backups:
