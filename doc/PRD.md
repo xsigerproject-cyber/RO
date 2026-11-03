@@ -9,6 +9,10 @@
 | Status dokumen | Baseline berdasarkan implementasi repository |
 | Tanggal | 3 November 2026 |
 
+## Dokumen Terkait
+
+Alasan dan konteks historis di balik aturan bisnis dicatat pada [`doc/DECISION_LOG.md`](DECISION_LOG.md). PRD ini tetap menjadi rujukan kebutuhan dan aturan bisnis yang berlaku.
+
 ## 1. Ringkasan Produk
 
 Aplikasi Master Data adalah aplikasi web internal untuk mengelola data referensi operasional yang terdiri dari Dapur, Jadwal, Toko, dan Template Produk. Aplikasi dibangun menggunakan Django, PostgreSQL, Docker Compose, dan Bootstrap 5.
