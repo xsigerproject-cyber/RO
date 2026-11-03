@@ -592,3 +592,10 @@ Belum ada hasil eksekusi test atau restore runtime yang diklaim oleh dokumen ini
 - Penghapusan ditolak jika jumlah user lebih dari nol.
 - Role inti `Administrator`, `Admin Toko`, dan `Admin Produksi` dilindungi dari rename dan delete karena nama tersebut dipakai oleh fungsi pemeriksaan role. Permission-nya tetap dapat diedit.
 - Tidak ada perubahan model aplikasi atau migration database.
+
+
+### 15.11 Filter kata kunci permission pada form Role
+- Template `templates/admin_tools/role_form.html` menyediakan input pencarian client-side.
+- Filter mencocokkan teks permission, app/model, dan codename secara case-insensitive.
+- Opsi yang tidak cocok disembunyikan tanpa mengubah status checked, sehingga permission yang sudah dipilih tidak hilang saat difilter.
+- Tidak ada perubahan endpoint, model, atau migration.
