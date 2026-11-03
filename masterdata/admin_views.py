@@ -1,0 +1,233 @@
+import logging
+import os
+import re
+import subprocess
+import uuid
+from datetime import datetime
+from pathlib import Path
+
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.db import connections
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.http import require_POST
+
+from .admin_forms import AdminSetPasswordForm, AdminUserForm
+from .models import UserProfile
+from .permissions import is_administrator
+
+logger = logging.getLogger(__name__)
+User = get_user_model()
+BACKUP_DIR = Path(os.getenv("DB_BACKUP_DIR", "/var/backups/ro"))
+BACKUP_NAME_RE = re.compile(r"^ro_db_\d{8}_\d{6}_[a-f0-9]{8}\.dump$")
+
+
+def _admin_only(view):
+    @login_required
+    def wrapped(request, *args, **kwargs):
+        if not is_administrator(request.user):
+            return HttpResponseForbidden("Hanya Administrator yang dapat mengakses modul administrasi.")
+        return view(request, *args, **kwargs)
+    return wrapped
+
+
+def _db_env():
+    db = settings.DATABASES["default"]
+    return {
+        "PGHOST": str(db.get("HOST") or "localhost"),
+        "PGPORT": str(db.get("PORT") or "5432"),
+        "PGDATABASE": str(db["NAME"]),
+        "PGUSER": str(db["USER"]),
+        "PGPASSWORD": str(db.get("PASSWORD") or ""),
+    }
+
+
+def _run_db_command(args, timeout=1800):
+    env = os.environ.copy()
+    env.update(_db_env())
+    env["PGCONNECT_TIMEOUT"] = "15"
+    result = subprocess.run(
+        args, env=env, capture_output=True, text=True, timeout=timeout, check=False
+    )
+    if result.returncode != 0:
+        logger.error("Database utility failed (%s): %s", args[0], result.stderr[-4000:])
+        raise RuntimeError(result.stderr[-1500:] or f"{args[0]} gagal.")
+    return result
+
+
+def _create_backup():
+    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    stamp = timezone.localtime().strftime("%Y%m%d_%H%M%S")
+    filename = f"ro_db_{stamp}_{uuid.uuid4().hex[:8]}.dump"
+    path = BACKUP_DIR / filename
+    _run_db_command([
+        "pg_dump", "--format=custom", "--no-owner", "--no-privileges",
+        "--file", str(path),
+    ])
+    if not path.exists() or path.stat().st_size == 0:
+        raise RuntimeError("File backup tidak terbentuk atau kosong.")
+    return path
+
+
+def _backup_files():
+    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    files = []
+    for path in sorted(BACKUP_DIR.glob("ro_db_*.dump"), key=lambda p: p.stat().st_mtime, reverse=True):
+        if path.is_file() and BACKUP_NAME_RE.fullmatch(path.name):
+            files.append({"name": path.name, "size": path.stat().st_size, "modified": datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.get_current_timezone())})
+    return files
+
+
+@_admin_only
+def admin_home(request):
+    return render(request, "admin_tools/home.html", {
+        "user_count": User.objects.count(),
+        "active_user_count": User.objects.filter(is_active=True).count(),
+        "backup_count": len(_backup_files()),
+    })
+
+
+@_admin_only
+def user_list(request):
+    users = User.objects.prefetch_related("groups").select_related("profile").order_by("username")
+    return render(request, "admin_tools/user_list.html", {"users": users})
+
+
+@_admin_only
+def user_create(request):
+    form = AdminUserForm(request.POST or None)
+    if request.method == "POST":
+        username = request.POST.get("username", "")
+        if form.is_valid():
+            user = form.save()
+            user.set_unusable_password()
+            user.save(update_fields=["password"])
+            messages.success(request, f"User {user.username} berhasil dibuat. Atur password melalui menu Ganti Password.")
+            return redirect("admin_user_list")
+    return render(request, "admin_tools/user_form.html", {"form": form, "page_title": "Tambah User"})
+
+
+@_admin_only
+def user_edit(request, user_id):
+    target = get_object_or_404(User, pk=user_id)
+    if target.is_superuser and not request.user.is_superuser:
+        return HttpResponseForbidden("Hanya superuser yang dapat mengubah akun superuser.")
+    form = AdminUserForm(request.POST or None, instance=target)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, f"User {target.username} berhasil diperbarui.")
+        return redirect("admin_user_list")
+    return render(request, "admin_tools/user_form.html", {"form": form, "page_title": f"Ubah User: {target.username}", "target": target})
+
+
+@_admin_only
+def user_password(request, user_id):
+    target = get_object_or_404(User, pk=user_id)
+    if target.is_superuser and not request.user.is_superuser:
+        return HttpResponseForbidden("Hanya superuser yang dapat mengganti password akun superuser.")
+    form = AdminSetPasswordForm(request.POST or None, user=target)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, f"Password user {target.username} berhasil diganti.")
+        return redirect("admin_user_list")
+    return render(request, "admin_tools/password_form.html", {"form": form, "target": target})
+
+
+@_admin_only
+@require_POST
+def user_delete(request, user_id):
+    target = get_object_or_404(User, pk=user_id)
+    if target.pk == request.user.pk:
+        messages.error(request, "Akun yang sedang digunakan tidak dapat dihapus.")
+    elif target.is_superuser:
+        messages.error(request, "Akun superuser tidak dapat dihapus melalui modul ini.")
+    else:
+        username = target.username
+        target.delete()
+        messages.success(request, f"User {username} berhasil dihapus.")
+    return redirect("admin_user_list")
+
+
+@_admin_only
+def backup_home(request):
+    return render(request, "admin_tools/backup.html", {"backups": _backup_files()})
+
+
+@_admin_only
+@require_POST
+def backup_create(request):
+    try:
+        path = _create_backup()
+        messages.success(request, f"Backup berhasil dibuat: {path.name}")
+    except Exception:
+        logger.exception("Pembuatan backup database gagal.")
+        messages.error(request, "Backup gagal. Periksa log server dan konfigurasi PostgreSQL client.")
+    return redirect("admin_backup")
+
+
+@_admin_only
+def backup_download(request, filename):
+    if not BACKUP_NAME_RE.fullmatch(filename):
+        raise Http404
+    path = BACKUP_DIR / filename
+    if not path.is_file():
+        raise Http404
+    return FileResponse(path.open("rb"), as_attachment=True, filename=filename)
+
+
+@_admin_only
+def restore_home(request):
+    return render(request, "admin_tools/restore.html", {"backups": _backup_files()})
+
+
+@_admin_only
+@require_POST
+def restore_database(request):
+    uploaded = request.FILES.get("backup_file")
+    confirmation = request.POST.get("confirmation", "").strip()
+    if confirmation != "RESTORE DATABASE":
+        messages.error(request, "Konfirmasi harus diketik persis: RESTORE DATABASE.")
+        return redirect("admin_restore")
+    if not uploaded:
+        messages.error(request, "Pilih file backup terlebih dahulu.")
+        return redirect("admin_restore")
+    if uploaded.size > 1024 * 1024 * 1024:
+        messages.error(request, "Ukuran file backup maksimal 1 GB.")
+        return redirect("admin_restore")
+
+    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    temp_path = BACKUP_DIR / f"restore_upload_{uuid.uuid4().hex}.dump"
+    try:
+        with temp_path.open("wb") as destination:
+            for chunk in uploaded.chunks():
+                destination.write(chunk)
+        _run_db_command(["pg_restore", "--list", str(temp_path)], timeout=120)
+        safety_backup = _create_backup()
+        _run_db_command([
+            "pg_restore", "--clean", "--if-exists", "--no-owner",
+            "--no-privileges", "--exit-on-error", "--single-transaction",
+            "--dbname", settings.DATABASES["default"]["NAME"], str(temp_path),
+        ])
+        messages.success(
+            request,
+            f"Restore selesai. Backup kondisi sebelum restore tersimpan sebagai {safety_backup.name}. "
+            "Silakan login kembali jika sesi berubah."
+        )
+    except Exception:
+        logger.exception("Restore database gagal.")
+        messages.error(
+            request,
+            "Restore gagal. Proses restore dijalankan dalam satu transaksi sehingga perubahan parsial dibatalkan. "
+            "Periksa log server."
+        )
+    finally:
+        try:
+            temp_path.unlink(missing_ok=True)
+        except OSError:
+            logger.warning("Tidak dapat menghapus file upload restore sementara.")
+    return redirect("admin_restore")
