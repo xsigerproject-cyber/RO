@@ -360,3 +360,10 @@ Kriteria penerimaan tambahan:
 41. Penghapusan role yang masih memiliki user ditolak tanpa mengubah data.
 42. Role inti tidak dapat dihapus atau diganti nama, tetapi permission-nya dapat dikelola.
 43. Pengguna non-Administrator menerima HTTP 403 pada endpoint Manajemen Role.
+
+
+### 13.1 Filter Permission saat mengubah Role
+- Form Ubah Role menyediakan kotak filter kata kunci untuk mempersempit daftar permission yang tampil.
+- Pencarian tidak membedakan huruf besar/kecil dan mencocokkan nama permission, nama model, nama aplikasi, serta codename.
+- Contoh kata kunci `view` menampilkan permission yang mengandung kata tersebut.
+- Filter hanya menyembunyikan/menampilkan pilihan di browser; pilihan checkbox yang sudah dicentang tetap dipertahankan saat filter berubah.
