@@ -262,3 +262,26 @@ Terapkan Bootstrap 5 secara konsisten pada field, gunakan grid responsif, checkb
 **Dampak kode/migration:** Memperbarui `masterdata/admin_forms.py` dan template `templates/admin_tools/`. Tidak ada perubahan model atau migration.
 
 **Status implementasi dan pengujian:** Perubahan tampilan telah dikomit ke branch main. Belum ada verifikasi visual pada browser/server pengguna.
+
+
+## 13. 2026-11-03 — Manajemen Role / Group di modul Administrasi
+
+**Konteks/masalah:**
+Administrator sebelumnya hanya dapat memilih Group pada form user. Pembuatan dan pengelolaan Group masih harus dilakukan melalui Django Admin, sehingga alur administrasi belum terpusat.
+
+**Keputusan:**
+Tambahkan menu Manajemen Role di dashboard Administrasi. Administrator dapat membuat Group, mengubah Group, mengelola permission, melihat jumlah user dan permission, serta menghapus Group yang tidak sedang digunakan.
+
+**Pengamanan dan kompatibilitas:**
+- Semua endpoint hanya untuk Administrator/superuser.
+- Penghapusan memakai POST + CSRF dan ditolak jika Group masih memiliki anggota.
+- Nama role inti `Administrator`, `Admin Toko`, dan `Admin Produksi` tidak dapat diganti atau dihapus karena dipakai oleh logika akses aplikasi. Permission role inti tetap dapat dikelola.
+- Tidak membuat atau mengubah model aplikasi; menggunakan Group dan Permission bawaan Django.
+
+**Dampak PRD:** Menambahkan kebutuhan dan kriteria penerimaan Manajemen Role.
+
+**Dampak DDS/DDL:** Menambahkan endpoint, form, view, dan aturan perlindungan role inti.
+
+**Dampak kode/migration:** Menambah `masterdata/admin_role_forms.py`, dua template role, view dan route baru, serta kartu menu pada dashboard Administrasi. Tidak ada migration.
+
+**Status implementasi dan pengujian:** Kode telah dikomit ke branch main. Belum diverifikasi pada server/browser dan belum ada klaim pengujian runtime.
