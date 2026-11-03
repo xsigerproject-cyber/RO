@@ -11,7 +11,7 @@
   <link href="{% static 'css/sb-admin-overrides.css' %}" rel="stylesheet">
   {% block extra_css %}{% endblock %}
 </head>
-<body class="sb-nav-fixed" data-theme="{{ current_theme|default:'light' }}">
+<body class="sb-nav-fixed {% if request.user.is_authenticated %}user-authenticated{% else %}user-anonymous{% endif %}" data-theme="{{ current_theme|default:'light' }}">
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
   <a class="navbar-brand ps-3" href="{% url 'dashboard' %}"><i class="fas fa-layer-group me-2"></i>RO Master Data</a>
   <button class="btn btn-link btn-sm order-1 order-lg-0 me-3" id="sidebarToggle" aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button>
