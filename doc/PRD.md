@@ -287,3 +287,56 @@ Inisialisasi tidak menghapus volume/database PostgreSQL dan tidak mereset sequen
 24. Inisialisasi memerlukan konfirmasi teks `RESET DATA`; konfirmasi yang salah tidak mengubah data.
 25. Log audit mencatat pelaku, waktu, jenis tindakan, dan jumlah record yang dihapus.
 26. Kegagalan di tengah proses inisialisasi menyebabkan rollback penuh.
+
+
+## 12. Modul Administrasi User dan Database
+
+<badge>Implementasi awal pada branch main; wajib diverifikasi sebelum produksi</badge>
+
+Modul Administrasi hanya dapat diakses Administrator dan superuser.
+
+### 12.1 Manajemen User
+- Menampilkan daftar user, status aktif, dan grup/role.
+- Membuat user dengan username, nama, email, status aktif, grup/role, serta Toko jika role Admin Toko.
+- User baru dibuat tanpa password yang dapat digunakan; Administrator harus menetapkan password melalui aksi Ganti Password.
+- Mengubah data user, role, status aktif, dan relasi Toko untuk Admin Toko.
+- Menghapus user melalui POST dengan konfirmasi.
+- Mengatur password baru untuk user dengan validasi password Django.
+- Akun yang sedang digunakan tidak dapat dihapus atau dinonaktifkan sendiri.
+- Superuser tidak dapat dihapus melalui modul ini; pengubahan akun superuser dan password-nya hanya boleh dilakukan oleh superuser.
+- Administrator aktif terakhir tidak boleh dinonaktifkan, kehilangan role Administrator, atau dihapus.
+
+### 12.2 Backup Database
+- Menjalankan `pg_dump` dalam format custom PostgreSQL.
+- Menyimpan file pada named volume Docker terpisah bernama `db_backups`, bukan pada volume data PostgreSQL.
+- Menampilkan daftar file backup dan menyediakan unduhan.
+- Backup harus disalin ke media/lokasi terpisah untuk perlindungan terhadap kerusakan server atau volume.
+
+### 12.3 Restore Database
+- Hanya menerima file custom dump berekstensi `.dump`, maksimum 1 GB.
+- Memvalidasi arsip menggunakan `pg_restore --list`.
+- Memerlukan teks konfirmasi persis `RESTORE DATABASE`.
+- Sebelum restore, sistem otomatis membuat backup database aktif.
+- Restore memakai `pg_restore` dengan clean/if-exists, no-owner/no-privileges, exit-on-error, dan single-transaction.
+- Jika restore gagal, transaksi restore dibatalkan; backup kondisi sebelum restore tetap tersedia.
+- Restore mengganti isi database aktif. Pengguna lain harus menghentikan aktivitas aplikasi selama proses berlangsung.
+
+### 12.4 Batasan Operasional
+- Backup dan restore memerlukan PostgreSQL client tools (`pg_dump` dan `pg_restore`) di image web.
+- File backup yang tersimpan pada volume Docker di server yang sama bukan pengganti salinan off-site.
+- Restore dapat mengubah user, password, RO, master data, dan seluruh isi database sesuai kondisi pada backup.
+- Restore tidak menjamin pemulihan database jika file backup rusak; prosedur backup harus diuji dengan restore pada lingkungan non-produksi.
+- Fitur ini belum boleh digunakan pada produksi sebelum uji backup, restore, hak akses, dan pemulihan selesai.
+
+### 12.5 Kriteria Penerimaan
+27. Hanya Administrator/superuser dapat mengakses seluruh endpoint modul Administrasi.
+28. Administrator dapat membuat, melihat, mengubah, dan menghapus user non-superuser.
+29. Role Admin Toko memerlukan pemetaan Toko; role lain tidak menyimpan pemetaan Toko.
+30. User baru tidak memiliki password aktif sampai Administrator menetapkan password.
+31. Password baru divalidasi dan disimpan menggunakan mekanisme hash Django.
+32. Akun sendiri dan Administrator aktif terakhir dilindungi dari penghapusan/penonaktifan yang dapat mengunci akses administrasi.
+33. Backup menghasilkan file PostgreSQL custom dump yang tidak kosong dan dapat diunduh.
+34. File backup disimpan pada volume terpisah dari volume data database.
+35. Restore menolak ekstensi/arsip/konfirmasi yang tidak valid dan ukuran file di atas batas.
+36. Restore otomatis membuat backup sebelum memulai proses pemulihan.
+37. Restore menggunakan transaksi tunggal dan gagal tanpa meninggalkan pemulihan parsial.
