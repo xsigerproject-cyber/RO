@@ -1,14 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Buat RO | RO{% endblock %}
+{% block title %}Transaksi RO | RO{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-  <div><h1 class="mt-2 mb-1">Transaksi RO</h1><div class="text-muted">Pilih toko, dapur, tanggal RO, tanggal kirim, dan jadwal.</div></div>
+  <div><h1 class="mt-2 mb-1">Transaksi RO</h1><div class="text-muted">Pilih parameter transaksi untuk menampilkan produk dari Template Produk.</div></div>
   <a href="{% url 'ro_daftar' %}" class="btn btn-outline-secondary"><i class="fas fa-list me-1"></i> Daftar RO</a>
 </div>
 <div class="card mb-4"><div class="card-header"><i class="fas fa-filter me-1"></i> Parameter RO</div><div class="card-body">
 <form method="get" class="row g-3">
-  {% if is_store_operator %}<input type="hidden" name="toko" value="{{ toko_user.pk }}"><div class="col-md-4"><label class="form-label">Toko</label><input class="form-control" value="{{ toko_user }}" readonly></div>
-  {% else %}<div class="col-md-4"><label class="form-label">Toko</label><select class="form-select" name="toko" required><option value="">Pilih Toko</option>{% for x in toko_options %}<option value="{{ x.pk }}" {% if request.GET.toko == x.pk|stringformat:"s" %}selected{% endif %}>{{ x.kode_toko }} - {{ x.nama_toko }}</option>{% endfor %}</select></div>{% endif %}
+  {% if is_store_operator %}
+    <input type="hidden" name="toko" value="{{ toko_user.pk }}">
+    <div class="col-md-4"><label class="form-label">Toko</label><input class="form-control" value="{{ toko_user }}" readonly></div>
+  {% else %}
+    <div class="col-md-4"><label class="form-label">Toko</label><select class="form-select" name="toko" required><option value="">Pilih Toko</option>{% for x in toko_options %}<option value="{{ x.pk }}" {% if request.GET.toko == x.pk|stringformat:"s" %}selected{% endif %}>{{ x.kode_toko }} - {{ x.nama_toko }}</option>{% endfor %}</select></div>
+  {% endif %}
   <div class="col-md-4"><label class="form-label">Dapur</label><select class="form-select" name="dapur" required><option value="">Pilih Dapur</option>{% for x in dapur_options %}<option value="{{ x.pk }}" {% if request.GET.dapur == x.pk|stringformat:"s" %}selected{% endif %}>{{ x.kode_dapur }} - {{ x.nama_dapur }}</option>{% endfor %}</select></div>
   <div class="col-md-4"><label class="form-label">Tanggal RO</label><input class="form-control" type="date" name="tgl_ro" value="{{ request.GET.tgl_ro|default:today }}" required></div>
   <div class="col-md-4"><label class="form-label">Tanggal Kirim</label><input class="form-control" type="date" name="tgl_kirim" value="{{ request.GET.tgl_kirim }}" required></div>
@@ -16,14 +20,29 @@
   <div class="col-12"><button class="btn btn-primary" type="submit"><i class="fas fa-search me-1"></i> Cari / Tampilkan Produk</button></div>
 </form>
 </div></div>
-{% if request.GET.toko and request.GET.dapur and request.GET.tgl_ro and request.GET.tgl_kirim and request.GET.jadwal %}
-<div class="alert alert-info">Setelah produk tampil, isi Qty lalu pilih Draft atau Kirim. Tanggal Produksi akan diisi pada proses lanjutan oleh Admin Produksi.</div>
-<div class="card"><div class="card-header"><i class="fas fa-boxes-stacked me-1"></i> Produk Dapur</div><div class="card-body">
+{% if selected %}
+<div class="alert alert-info mb-3">
+  RO: <strong>{{ selected.toko }}</strong> · <strong>{{ selected.dapur }}</strong> · {{ selected.tgl_ro|date:"d-m-Y" }} · {{ selected.jadwal }} · Kirim {{ selected.tgl_kirim|date:"d-m-Y" }}.
+  {% if read_only %}<strong> Status Terkirim — transaksi terkunci.</strong>{% else %}Isi Qty, lalu simpan sebagai Draft atau Kirim.{% endif %}
+</div>
+{% if items %}
+<div class="card"><div class="card-header"><i class="fas fa-boxes-stacked me-1"></i> Produk RO</div><div class="card-body">
 <form method="post" id="roForm">{% csrf_token %}
-<input type="hidden" name="toko" value="{{ request.GET.toko }}"><input type="hidden" name="dapur" value="{{ request.GET.dapur }}"><input type="hidden" name="tgl_ro" value="{{ request.GET.tgl_ro }}"><input type="hidden" name="tgl_kirim" value="{{ request.GET.tgl_kirim }}"><input type="hidden" name="jadwal" value="{{ request.GET.jadwal }}">
-<p class="text-muted small">Daftar produk dimuat setelah parameter RO dipilih. Jika transaksi sebelumnya sudah ada, gunakan Daftar RO untuk membukanya.</p>
-<div class="d-flex gap-2 flex-wrap"><button class="btn btn-outline-primary" name="action" value="draft" type="submit" onclick="return confirm('Anda akan menyimpan RO sebagai Draft. Lanjutkan?')"><i class="fas fa-file-pen me-1"></i> Draft</button><button class="btn btn-success" name="action" value="send" type="submit" onclick="return confirm('Anda akan mengirim data RO. Baris Qty kurang dari 1 akan dihapus dan RO tidak dapat diedit lagi. Lanjutkan?')"><i class="fas fa-paper-plane me-1"></i> Kirim</button></div>
+<input type="hidden" name="toko" value="{{ selected.toko.pk }}"><input type="hidden" name="dapur" value="{{ selected.dapur.pk }}"><input type="hidden" name="tgl_ro" value="{{ selected.tgl_ro|date:'Y-m-d' }}"><input type="hidden" name="tgl_kirim" value="{{ selected.tgl_kirim|date:'Y-m-d' }}"><input type="hidden" name="jadwal" value="{{ selected.jadwal.pk }}">
+<div class="table-responsive"><table class="table table-bordered table-hover align-middle"><thead class="table-light"><tr><th style="width:120px">Kode Produk</th><th>Nama Produk</th><th style="width:180px">Qty Pesan</th></tr></thead><tbody>
+{% for item in items %}<tr>
+{% if item.produk %}<td>{{ item.produk.kode_produk }}</td><td>{{ item.produk.nama_produk }}</td><td><input class="form-control" type="number" min="0" step="1" name="qty_{{ item.produk_id }}" value="{{ item.qty_pesan }}" {% if read_only %}disabled{% endif %}></td>
+{% else %}<td>{{ item.kode_produk }}</td><td>{{ item.nama_produk }}</td><td><input class="form-control" type="number" min="0" step="1" name="qty_{{ item.pk }}" value="0"></td>{% endif %}
+</tr>{% endfor %}
+</tbody></table></div>
+{% if not read_only %}
+<div class="d-flex gap-2 flex-wrap">
+<button class="btn btn-outline-primary" name="action" value="draft" type="submit" onclick="return confirm('Anda akan menyimpan RO sebagai Draft. Semua baris termasuk Qty 0 tetap disimpan. Lanjutkan?')"><i class="fas fa-file-pen me-1"></i> Draft</button>
+<button class="btn btn-success" name="action" value="send" type="submit" onclick="return confirm('Anda akan mengirim data RO. Baris dengan Qty kurang dari 1 akan dihapus dan RO tidak dapat diedit lagi. Lanjutkan?')"><i class="fas fa-paper-plane me-1"></i> Kirim</button>
+</div>
+{% endif %}
 </form>
 </div></div>
+{% else %}<div class="alert alert-warning">Belum ada Template Produk untuk dapur ini.</div>{% endif %}
 {% endif %}
 {% endblock %}
