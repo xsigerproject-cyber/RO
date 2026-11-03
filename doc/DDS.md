@@ -368,3 +368,39 @@ Sebelum rilis, jalankan dan verifikasi pada lingkungan target:
 10. Pastikan file CSS/JS static dapat diakses dari browser.
 
 Dokumen ini adalah spesifikasi berdasarkan source code yang ditinjau; daftar verifikasi di atas bukan klaim bahwa seluruh pengujian telah dijalankan.
+
+
+## 13. Status Template Produk dan Sinkronisasi Draft RO
+
+### 13.1 Perubahan Model Data
+
+Model `TemplateProduk` menambahkan field:
+| Kolom | Tipe Django | Default | Keterangan |
+|---|---|---|---|
+| is_active | BooleanField | True | Menentukan apakah produk dapat digunakan pada RO baru dan Draft berjalan |
+
+Migration `0005_templateproduk_is_active.py` menambahkan kolom tersebut. Record lama memperoleh nilai default `True`, sehingga produk yang sudah ada tetap tersedia setelah migration.
+
+### 13.2 Form dan Daftar Master
+
+- ModelForm Template Produk menampilkan field `is_active` sebagai checkbox Aktif.
+- Daftar Template Produk menampilkan label Aktif atau Nonaktif.
+- Field status turut disertakan dalam konfigurasi impor/ekspor Excel Template Produk.
+
+### 13.3 Sinkronisasi Draft
+
+Fungsi `_sync_draft_products` di `masterdata/ro_views.py` menerima kunci transaksi (Tanggal RO, Toko, Dapur, Jadwal) dan melakukan:
+1. Mengambil produk Template Produk berstatus Aktif untuk Dapur tersebut.
+2. Menghapus baris produk Nonaktif dari RO berstatus Draft pada kunci transaksi yang sama.
+3. Mempertahankan baris produk yang masih Aktif, termasuk nilai Qty-nya.
+4. Membuat baris RO baru dengan Qty 0 untuk produk Aktif yang belum ada pada Draft.
+5. Tidak mengubah baris RO berstatus Terkirim.
+
+Sinkronisasi dijalankan saat halaman transaksi Draft dibuka dan sebelum Draft disimpan/dikirim. Daftar produk diurutkan berdasarkan kode produk saat ditampilkan.
+
+### 13.4 Batasan dan Verifikasi
+
+- Produk Nonaktif yang sudah berada di RO Terkirim tetap tersimpan sebagai bagian dari riwayat transaksi.
+- Mengaktifkan kembali produk menggunakan record Template Produk yang sama.
+- Verifikasi yang perlu dilakukan pada lingkungan target: migration, form tambah/edit Template Produk, impor/ekspor status, sinkronisasi produk aktif/nonaktif pada Draft, dan kekekalan RO Terkirim.
+- Pembaruan repository ini belum merupakan bukti bahwa migration atau pengujian telah dijalankan pada server produksi.
