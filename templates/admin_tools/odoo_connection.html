@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Pengaturan API Odoo{% endblock %}
+{% block content %}
+<section class="crud-page">
+  <header class="crud-heading">
+    <div>
+      <h1>Pengaturan API Odoo</h1>
+      <p>Konfigurasi koneksi Odoo 19. Tahap ini hanya menyimpan pengaturan dan menguji autentikasi; belum ada sinkronisasi data RO.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'admin_home' %}">Kembali ke Administrasi</a>
+  </header>
+
+  {% if config %}
+  <div class="crud-panel p-3 mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <div class="text-muted small">Status koneksi terakhir</div>
+        <strong>
+          {% if config.connection_status == "success" %}Berhasil
+          {% elif config.connection_status == "failed" %}Gagal
+          {% elif config.connection_status == "untested" %}Belum diuji
+          {% else %}Belum tersedia{% endif %}
+        </strong>
+        {% if config.connection_message %}<p class="mb-0 mt-1">{{ config.connection_message }}</p>{% endif %}
+        {% if config.last_tested_at %}<small class="text-muted">Terakhir diuji: {{ config.last_tested_at|date:"d-m-Y H:i:s" }}</small>{% endif %}
+      </div>
+      {% if has_api_key %}<span class="badge text-bg-success">API Key tersimpan</span>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <form method="post" class="crud-panel p-4">
+    {% csrf_token %}
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label" for="{{ form.base_url.id_for_label }}">{{ form.base_url.label }}</label>
+        {{ form.base_url }}
+        {% for error in form.base_url.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        <div class="form-text">Gunakan URL dasar instance Odoo, misalnya https://perusahaan.odoo.com. HTTPS wajib kecuali localhost untuk pengembangan.</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="{{ form.database.id_for_label }}">{{ form.database.label }}</label>
+        {{ form.database }}
+        {% for error in form.database.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        <div class="form-text">Opsional; isi jika server Odoo memerlukan pemilihan database.</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+        {{ form.username }}
+        {% for error in form.username.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        <div class="form-text">Identitas dokumentasi user integrasi. API Key JSON-2 terikat pada pemilik key di Odoo.</div>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="{{ form.api_key.id_for_label }}">{{ form.api_key.label }}</label>
+        {{ form.api_key }}
+        {% for error in form.api_key.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        <div class="form-text">
+          {% if has_api_key %}API Key lama tersimpan terenkripsi dan tidak pernah ditampilkan. Kosongkan untuk mempertahankannya.{% else %}Masukkan API Key Odoo. Nilai ini disimpan dalam bentuk terenkripsi dan tidak ditampilkan kembali.{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-4">
+      <button class="btn btn-primary" type="submit" name="action" value="save">Simpan Pengaturan</button>
+      <button class="btn btn-outline-primary" type="submit" name="action" value="test">Simpan &amp; Test Connection</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
