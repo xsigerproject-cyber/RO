@@ -2,88 +2,64 @@
 {% load masterdata_tags %}
 {% block title %}{{ title }} | RO{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-  <div><h1 class="mt-2 mb-1">{{ title }}</h1><div class="text-muted">Kelola data {{ title|lower }}</div></div>
-  <div class="d-flex flex-wrap gap-2">
-    <a class="btn btn-outline-success" href="{% url 'export_excel' kind %}"><i class="fas fa-file-excel me-1"></i> Export</a>
-    {% if can_manage %}<button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#createModal"><i class="fas fa-plus me-1"></i> Tambah Data</button>{% endif %}
-  </div>
-</div>
-<div class="card mb-4">
-  <div class="card-header"><i class="fas fa-table me-1"></i> Daftar {{ title }}</div>
-  <div class="card-body">
-    <form method="get" class="row g-2 align-items-center mb-3">
-      <div class="col-md-5"><label class="visually-hidden" for="searchMaster">Cari data</label><input id="searchMaster" name="q" class="form-control" placeholder="Cari {{ title|lower }}..." value="{{ request.GET.q }}"></div>
-      <div class="col-auto"><button class="btn btn-outline-primary" type="submit"><i class="fas fa-search me-1"></i> Cari</button></div>
-      {% if request.GET.q %}<div class="col-auto"><a class="btn btn-outline-secondary" href="{% url 'master_list' kind %}">Reset</a></div>{% endif %}
+<section class="crud-page">
+  <header class="crud-heading">
+    <div><h1>{{ title }}</h1><p>Kelola dan periksa data {{ title|lower }}.</p></div>
+    <div class="crud-heading__actions">
+      <a class="btn btn-outline-success" href="{% url 'export_excel' kind %}">Export Excel</a>
+      {% if can_manage %}<button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#createModal">Tambah {{ title }}</button>{% endif %}
+    </div>
+  </header>
+
+  <section class="crud-panel">
+    <div class="crud-panel__heading"><div><h2>Daftar {{ title }}</h2><p>Gunakan pencarian untuk menemukan data.</p></div></div>
+    <form method="get" class="crud-toolbar">
+      <div class="crud-search"><label class="visually-hidden" for="searchMaster">Cari {{ title }}</label><input id="searchMaster" name="q" class="form-control" placeholder="Cari {{ title|lower }}..." value="{{ request.GET.q }}"></div>
+      <button class="btn btn-outline-primary" type="submit">Cari</button>
+      {% if request.GET.q %}<a class="btn btn-quiet" href="{% url 'master_list' kind %}">Reset</a>{% endif %}
     </form>
     <div class="table-responsive">
-      <table class="table table-bordered table-hover align-middle" id="dataTable">
-        <thead class="table-light"><tr>{% for f in fields %}<th>{{ f|capfirst }}</th>{% endfor %}<th style="min-width:140px">Aksi</th></tr></thead>
+      <table class="table table-hover align-middle crud-table" id="dataTable">
+        <thead><tr>{% for f in fields %}<th>{{ f|capfirst }}</th>{% endfor %}<th class="crud-actions-heading">Aksi</th></tr></thead>
         <tbody>
           {% for obj in objects %}
-          <tr>{% for f in fields %}<td>{% if f == "dapur" %}{{ obj.dapur }}{% elif f == "is_active" %}{% if obj.is_active %}<span class="badge bg-success">Aktif</span>{% else %}<span class="badge bg-secondary">Nonaktif</span>{% endif %}{% else %}{{ obj|attr:f }}{% endif %}</td>{% endfor %}
-            <td class="text-nowrap">
-              {% if can_manage %}<a href="{% url 'master_edit' kind obj.pk %}" class="btn btn-sm btn-outline-primary" title="Edit"><i class="fas fa-pen"></i></a>{% endif %}
-              {% if can_delete %}<form method="post" action="{% url 'master_delete' kind obj.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit" title="Hapus" onclick="return confirm('Hapus data ini?')"><i class="fas fa-trash"></i></button></form>{% endif %}
+          <tr>{% for f in fields %}<td>{% if f == "dapur" %}{{ obj.dapur }}{% elif f == "is_active" %}<span class="status-label {% if obj.is_active %}status-label--success{% else %}status-label--muted{% endif %}">{% if obj.is_active %}Aktif{% else %}Nonaktif{% endif %}</span>{% else %}{{ obj|attr:f }}{% endif %}</td>{% endfor %}
+            <td class="crud-actions">
+              {% if can_manage %}<a href="{% url 'master_edit' kind obj.pk %}" class="btn btn-sm btn-outline-primary">Ubah</a>{% endif %}
+              {% if can_delete %}<form method="post" action="{% url 'master_delete' kind obj.pk %}" class="d-inline" onsubmit="return confirm('Hapus data {{ title|escapejs }} ini? Tindakan ini tidak dapat dibatalkan.')">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Hapus</button></form>{% endif %}
             </td>
           </tr>
-          {% empty %}<tr><td colspan="8" class="text-center py-5 text-muted"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Belum ada data</td></tr>{% endfor %}
+          {% empty %}<tr><td colspan="{{ fields|length|add:1 }}" class="crud-empty"><strong>{% if request.GET.q %}Data tidak ditemukan{% else %}Belum ada data {{ title|lower }}{% endif %}</strong><span>{% if request.GET.q %}Coba kata kunci lain atau reset pencarian.{% elif can_manage %}Tambahkan data baru atau impor dari Excel untuk memulai.{% else %}Data akan tampil di sini setelah tersedia.{% endif %}</span></td></tr>{% endfor %}
         </tbody>
       </table>
     </div>
-  </div>
-</div>
-{% if can_manage %}
-<div class="card mb-4"><div class="card-header"><i class="fas fa-file-import me-1"></i> Import Excel</div><div class="card-body">
-  <form method="post" enctype="multipart/form-data" action="{% url 'import_excel' kind %}" class="row g-2 align-items-center">
-    {% csrf_token %}<div class="col-md-6"><input class="form-control" type="file" name="file" accept=".xlsx" required aria-label="Pilih file Excel"></div>
-    <div class="col-auto"><button class="btn btn-outline-primary" type="submit"><i class="fas fa-upload me-1"></i> Import</button></div>
-    <div class="col-auto"><a class="btn btn-outline-success" href="{% url 'download_import_template' kind %}"><i class="fas fa-download me-1"></i> Download Template</a></div>
-    <div class="form-text">Format .xlsx, ukuran maksimal 5 MB.</div>
-  </form>
-</div></div>
-<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
-    <form method="post" action="{% url 'master_create' kind %}">{% csrf_token %}
-      <div class="modal-header"><h5 class="modal-title" id="createModalLabel"><i class="fas fa-plus-circle me-2"></i>Tambah {{ title }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
-      <div class="modal-body">
-        {% for field in create_form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}{% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>{% endfor %}
-        {% for error in create_form.non_field_errors %}<div class="alert alert-danger">{{ error }}</div>{% endfor %}
-      </div>
-      <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan Data</button></div>
+  </section>
+
+  {% if can_manage %}
+  <section class="crud-panel crud-panel--subtle">
+    <div class="crud-panel__heading"><div><h2>Import Excel</h2><p>Gunakan berkas .xlsx dengan header sesuai template.</p></div></div>
+    <form method="post" enctype="multipart/form-data" action="{% url 'import_excel' kind %}" class="crud-toolbar crud-import">
+      {% csrf_token %}<div class="crud-search"><label class="visually-hidden" for="masterImportFile">Pilih file Excel</label><input id="masterImportFile" class="form-control" type="file" name="file" accept=".xlsx" required></div>
+      <button class="btn btn-outline-primary" type="submit">Import</button>
+      <a class="btn btn-outline-secondary" href="{% url 'download_import_template' kind %}">Download Template</a>
+      <span class="form-text">Format .xlsx, maksimal 5 MB.</span>
     </form>
-  </div></div>
-</div>
-{% endif %}
+  </section>
+  <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content crud-modal">
+      <form method="post" action="{% url 'master_create' kind %}">{% csrf_token %}
+        <div class="modal-header"><div><h2 class="modal-title" id="createModalLabel">Tambah {{ title }}</h2><p class="mb-0 text-muted">Lengkapi informasi data master.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+        <div class="modal-body">
+          {% for field in create_form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}{% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>{% endfor %}
+          {% for error in create_form.non_field_errors %}<div class="alert alert-danger">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-quiet" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary">Simpan Data</button></div>
+      </form>
+    </div></div>
+  </div>
+  {% endif %}
+</section>
 {% endblock %}
 {% block extra_js %}
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const modalElement = document.getElementById("createModal");
-  if (!modalElement) return;
-  const dialog = modalElement.querySelector(".modal-dialog");
-  const header = modalElement.querySelector(".modal-header");
-  let dragging = false, startX = 0, startY = 0, offsetX = 0, offsetY = 0;
-  header.addEventListener("pointerdown", function (event) {
-    if (event.target.closest("button, a, input, select, textarea")) return;
-    dragging = true; startX = event.clientX - offsetX; startY = event.clientY - offsetY;
-    header.setPointerCapture(event.pointerId); event.preventDefault();
-  });
-  header.addEventListener("pointermove", function (event) {
-    if (!dragging) return;
-    offsetX = event.clientX - startX; offsetY = event.clientY - startY;
-    const maxX = Math.max(0, (window.innerWidth - dialog.offsetWidth) / 2);
-    const maxY = Math.max(0, (window.innerHeight - dialog.offsetHeight) / 2);
-    offsetX = Math.min(maxX, Math.max(-maxX, offsetX)); offsetY = Math.min(maxY, Math.max(-maxY, offsetY));
-    dialog.style.transform = "translate(" + offsetX + "px, " + offsetY + "px)";
-  });
-  const stopDragging = () => { dragging = false; };
-  header.addEventListener("pointerup", stopDragging); header.addEventListener("pointercancel", stopDragging);
-  modalElement.addEventListener("hidden.bs.modal", function () { offsetX = 0; offsetY = 0; dialog.style.transform = ""; });
-  {% if show_create_modal %}
-  if (window.bootstrap) bootstrap.Modal.getOrCreateInstance(modalElement).show();
-  {% endif %}
-});
-</script>
+{% if show_create_modal %}<script>document.addEventListener("DOMContentLoaded",function(){const el=document.getElementById("createModal");if(el&&window.bootstrap){bootstrap.Modal.getOrCreateInstance(el).show();}});</script>{% endif %}
 {% endblock %}
