@@ -392,3 +392,13 @@ Lihat riwayat commit branch `main` untuk `DESIGN.md`, template dashboard, CSS te
 - **Dampak kode/migration:** Perubahan direncanakan pada template CRUD master dan admin, serta view User untuk pencarian. Tidak ada perubahan model/migration yang direncanakan.
 - **Status implementasi dan pengujian:** Disetujui; implementasi dan pemeriksaan source akan dicatat setelah perubahan. Browser/runtime dan lima tema belum diverifikasi.
 - **Referensi commit:** Diisi setelah implementasi.
+
+
+### Status implementasi — 2026-11-04
+
+- Penyegaran template daftar/form Master Data, daftar/form User, form password, daftar/form Role, dan halaman utama Administrasi telah diterapkan.
+- Daftar User kini menerima parameter `q` dan memfilter username, first_name, last_name, serta email menggunakan pencocokan case-insensitive pada queryset Administrator.
+- Filter permission Role tetap dipertahankan; elemen yang tidak cocok disembunyikan tanpa mengubah state checkbox.
+- CSS CRUD menggunakan token tema yang sudah tersedia, termasuk `--bg-card`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--border-color`, `--accent-color`, dan warna status semantik.
+- Tidak ada perubahan model, migration, aturan bisnis, endpoint, otorisasi, atau proses import/export.
+- **Batas verifikasi:** perubahan telah diperiksa pada source code repository. Belum dilakukan browser rendering, click-through, pengujian lima tema/breakpoint, automated Django tests, Docker build, atau verifikasi runtime di server. Karena itu hasil belum boleh disebut lulus audit visual/runtime.
