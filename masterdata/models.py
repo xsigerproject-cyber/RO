@@ -139,3 +139,25 @@ def create_or_save_user_profile(sender, instance, created, **kwargs):
         UserProfile.objects.create(user=instance)
     else:
         UserProfile.objects.get_or_create(user=instance)
+
+
+class OdooConnectionSetting(models.Model):
+    """Konfigurasi satu koneksi Odoo; API key disimpan terenkripsi."""
+    base_url = models.URLField(max_length=500)
+    database = models.CharField(max_length=120, blank=True)
+    username = models.CharField(max_length=150)
+    api_key_encrypted = models.TextField()
+    last_tested_at = models.DateTimeField(null=True, blank=True)
+    connection_status = models.CharField(max_length=20, blank=True)
+    connection_message = models.CharField(max_length=500, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Pengaturan Koneksi Odoo"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return "Pengaturan koneksi Odoo"
