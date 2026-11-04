@@ -143,6 +143,7 @@ def create_or_save_user_profile(sender, instance, created, **kwargs):
 
 class OdooConnectionSetting(models.Model):
     """Konfigurasi satu koneksi Odoo; API key disimpan terenkripsi."""
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
     base_url = models.URLField(max_length=500)
     database = models.CharField(max_length=120, blank=True)
     username = models.CharField(max_length=150)
