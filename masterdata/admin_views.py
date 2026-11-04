@@ -338,7 +338,9 @@ class OdooConnectionForm(forms.Form):
     def clean_base_url(self):
         value = self.cleaned_data["base_url"].rstrip("/")
         parsed = urlparse(value)
-        if parsed.scheme != "https" and parsed.hostname not in ("localhost", "127.0.0.1"):
+        if parsed.scheme not in ("https", "http") or not parsed.hostname:
+            raise forms.ValidationError("URL Odoo harus menggunakan HTTP atau HTTPS dan memiliki hostname yang valid.")
+        if parsed.scheme != "https" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
             raise forms.ValidationError("Koneksi ke Odoo wajib menggunakan HTTPS; HTTP hanya diizinkan untuk localhost.")
         if parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.path not in ("", "/"):
             raise forms.ValidationError("Masukkan URL dasar Odoo saja, tanpa kredensial, path, query, atau fragment.")
@@ -383,7 +385,7 @@ def odoo_connection_settings(request):
                         parsed = urlparse(config.base_url)
                         if parsed.scheme not in ("https", "http") or not parsed.netloc or parsed.username or parsed.password:
                             raise ValueError("URL Odoo tidak valid.")
-                        if parsed.scheme != "https" and parsed.hostname not in ("localhost", "127.0.0.1"):
+                        if parsed.scheme != "https" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
                             raise ValueError("Koneksi Odoo wajib menggunakan HTTPS.")
                         key = _odoo_fernet().decrypt(config.api_key_encrypted.encode("ascii")).decode("utf-8")
                         headers = {
@@ -398,8 +400,14 @@ def odoo_connection_settings(request):
                             headers=headers, json={}, timeout=(5, 15), allow_redirects=False,
                         )
                         if response.status_code == 200:
+                            try:
+                                payload = response.json()
+                            except ValueError as exc:
+                                raise ValueError("Odoo mengembalikan HTTP 200 tetapi responsnya bukan JSON yang valid.") from exc
+                            if not isinstance(payload, dict):
+                                raise ValueError("Respons endpoint Odoo tidak sesuai format context_get yang diharapkan.")
                             config.connection_status = "success"
-                            config.connection_message = "Koneksi berhasil. Odoo menerima autentikasi API Key."
+                            config.connection_message = "Koneksi berhasil. Odoo menerima autentikasi API Key dan mengembalikan context user."
                             messages.success(request, config.connection_message)
                         elif response.status_code in (401, 403):
                             raise ValueError("Autentikasi ditolak Odoo. Periksa API Key dan hak akses user integrasi.")
@@ -409,7 +417,7 @@ def odoo_connection_settings(request):
                             raise ValueError("Odoo mengalihkan koneksi. Periksa URL dasar dan HTTPS.")
                         else:
                             raise ValueError(f"Odoo merespons HTTP {response.status_code}. Periksa URL dan database.")
-                    except (requests.RequestException, ValueError, InvalidToken) as exc:
+                    except (requests.RequestException, ValueError, InvalidToken, UnicodeError) as exc:
                         config.connection_status = "failed"
                         config.connection_message = str(exc)[:500]
                         messages.error(request, config.connection_message)
