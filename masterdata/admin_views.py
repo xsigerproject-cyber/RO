@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.db import models
 from django.db.models import Count
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404, HttpResponseForbidden
@@ -103,8 +104,16 @@ def admin_home(request):
 
 @_admin_only
 def user_list(request):
+    query = request.GET.get("q", "").strip()
     users = User.objects.prefetch_related("groups").select_related("profile").order_by("username")
-    return render(request, "admin_tools/user_list.html", {"users": users})
+    if query:
+        users = users.filter(
+            models.Q(username__icontains=query)
+            | models.Q(first_name__icontains=query)
+            | models.Q(last_name__icontains=query)
+            | models.Q(email__icontains=query)
+        )
+    return render(request, "admin_tools/user_list.html", {"users": users, "query": query})
 
 
 @_admin_only
