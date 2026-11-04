@@ -55,13 +55,11 @@
           <div class="sb-sidenav-menu-heading">TRANSAKSI RO</div>
           <a class="nav-link {% if request.resolver_match.url_name == 'ro_transaksi' %}active{% endif %}" href="{% url 'ro_transaksi' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-file-circle-plus"></i></div>Buat RO</a>
           <a class="nav-link {% if request.resolver_match.url_name == 'ro_daftar' %}active{% endif %}" href="{% url 'ro_daftar' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-clipboard-list"></i></div>Daftar RO</a>
-          {% if not is_admin_toko_user %}
           <div class="sb-sidenav-menu-heading">MASTER DATA</div>
           <a class="nav-link {% if request.resolver_match.kwargs.kind == 'dapur' %}active{% endif %}" href="{% url 'master_list' 'dapur' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-fire-burner"></i></div>Dapur</a>
           <a class="nav-link {% if request.resolver_match.kwargs.kind == 'jadwal' %}active{% endif %}" href="{% url 'master_list' 'jadwal' %}"><div class="sb-nav-link-icon"><i class="fa-regular fa-calendar-days"></i></div>Jadwal</a>
           <a class="nav-link {% if request.resolver_match.kwargs.kind == 'toko' %}active{% endif %}" href="{% url 'master_list' 'toko' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-store"></i></div>Toko</a>
           <a class="nav-link {% if request.resolver_match.kwargs.kind == 'produk' %}active{% endif %}" href="{% url 'master_list' 'produk' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-stacked"></i></div>Template Produk</a>
-          {% endif %}
           {% if is_administrator_user %}
           <div class="sb-sidenav-menu-heading">ADMINISTRASI</div>
           <a class="nav-link {% if 'admin_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'admin_home' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-user-shield"></i></div>Administrasi</a>
