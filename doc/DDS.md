@@ -666,3 +666,39 @@ Konfigurasi CRUD Dapur memasukkan kedua field pada daftar dan pencarian. Karena 
 - Tidak ada perubahan model, migration, endpoint, validasi, permission, atau aturan RO.
 - Google Fonts Inter dan Font Awesome menggunakan CDN; tampilan font/ikon memerlukan koneksi browser ke sumber CDN. Font stack fallback tetap tersedia.
 - Verifikasi browser, responsivitas aktual, kontras, click-through, dan lima tema belum dilakukan.
+
+## 18. Pengaturan Koneksi Odoo — Tahap 1
+
+### Data model
+Model `OdooConnectionSetting` menyimpan satu konfigurasi (singleton, primary key tetap `id=1`):
+- `base_url`: URL dasar instance Odoo.
+- `database`: nama database, opsional.
+- `username`: label/identitas user integrasi untuk administrasi; autentikasi JSON-2 dilakukan oleh API Key yang terikat pada pemilik key di Odoo.
+- `api_key_encrypted`: token Fernet, bukan plaintext.
+- `last_tested_at`, `connection_status`, `connection_message`, `updated_at`: status koneksi dan metadata.
+
+Migration: `0008_odooconnectionsetting.py`, bergantung pada `0007_dapur_operation_types`.
+
+### Endpoint dan UI
+- `GET/POST /admin-tools/odoo-connection/` (`admin_odoo_connection`): halaman pengaturan dan Test Connection.
+- Kartu menu ditampilkan pada dashboard Administrasi.
+- Akses dilindungi decorator `_admin_only`; hanya Administrator/superuser.
+- Form menampilkan URL, database, user integrasi, dan input API Key. API Key tidak diisi kembali pada GET; kolom kosong berarti pertahankan key lama.
+
+### Enkripsi dan konfigurasi server
+- Paket runtime: `requests` dan `cryptography`.
+- Kunci Fernet dibaca dari environment `ODOO_API_ENCRYPTION_KEY`, diteruskan oleh Docker Compose dari file `.env`.
+- Buat kunci di lingkungan tepercaya dengan `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`, lalu simpan sebagai `ODOO_API_ENCRYPTION_KEY=...` di file `.env` server. Jangan commit nilai kunci ke Git.
+- Kunci harus stabil dan dicadangkan secara aman. Jika hilang/berubah, API Key terenkripsi yang sudah tersimpan tidak dapat didekripsi; masukkan ulang API Key setelah memulihkan konfigurasi kunci.
+- Jika environment key tidak tersedia/tidak valid, penyimpanan API Key ditolak.
+
+### Protokol Test Connection
+- Kirim `POST {base_url}/json/2/res.users/context_get` dengan JSON body kosong, `Authorization: bearer <API_KEY>`, `Content-Type: application/json`, dan `User-Agent`.
+- Tambahkan `X-Odoo-Database` jika database diisi.
+- Timeout koneksi/read dibatasi; redirect dinonaktifkan; HTTPS diwajibkan kecuali localhost/127.0.0.1.
+- HTTP 200 menandakan endpoint berhasil memvalidasi key dan mengembalikan context user. Ini bukan bukti bahwa seluruh model/operasi yang kelak dibutuhkan integrasi memiliki permission.
+- 401/403 ditampilkan sebagai penolakan autentikasi/akses; 404 sebagai endpoint tidak ditemukan; error jaringan dan respons lain dicatat sebagai gagal tanpa menampilkan API Key.
+- Pemanggilan `res.users/context_get` tanpa ID merupakan cara yang didokumentasikan Odoo 19 untuk mengambil context/current user dari API Key.
+
+### Batas lingkup dan verifikasi
+Tahap ini tidak melakukan sinkronisasi, pembacaan master, atau transaksi RO. Belum ada bukti koneksi ke instance Odoo pengguna, build Docker, migration apply, maupun pengujian browser. Validasi deployment perlu memastikan environment key terpasang, migration 0008 berjalan, halaman hanya dapat diakses Administrator, dan Test Connection berhasil dengan API Key yang valid.
