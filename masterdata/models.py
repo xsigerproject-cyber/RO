@@ -8,6 +8,8 @@ class Dapur(models.Model):
     kode_dapur = models.PositiveIntegerField(primary_key=True)
     nama_dapur = models.CharField(max_length=120)
     operation_type = models.CharField(max_length=120)
+    operation_type_kirim = models.CharField(max_length=120)
+    operation_type_terima = models.CharField(max_length=120)
     document = models.CharField(max_length=60)
 
     class Meta:
