@@ -439,3 +439,32 @@ Lihat riwayat commit branch `main` untuk `DESIGN.md`, template dashboard, CSS te
 **Status implementasi dan pengujian:** Source template, CSS, dan dokumen diperbarui pada branch main. Belum dilakukan browser rendering, click-through, pengujian lima tema, breakpoint, automated tests, Docker build, atau runtime server. Kesamaan visual hasil akhir belum tervalidasi.
 
 **Referensi commit:** Lihat riwayat branch main untuk perubahan ini.
+
+## 20. 2026-11-04 — Pengaturan Koneksi API Odoo (Tahap 1)
+
+**Konteks/masalah:**
+Aplikasi RO akan disiapkan untuk integrasi Odoo, tetapi pemilik produk membatasi tahap pertama pada pengaturan koneksi dan pengujian koneksi. Belum ada persetujuan untuk sinkronisasi atau pertukaran data RO.
+
+**Keputusan:**
+1. Tambahkan menu Administrator → Pengaturan API Odoo.
+2. Simpan URL Odoo, database opsional, identitas user integrasi, dan API Key.
+3. Simpan API Key dalam bentuk terenkripsi menggunakan Fernet dengan kunci khusus dari environment server `ODOO_API_ENCRYPTION_KEY`; jangan menyimpan kunci enkripsi pada Git.
+4. Kolom API Key tidak pernah menampilkan nilai tersimpan. Saat edit, kolom kosong mempertahankan API Key sebelumnya.
+5. Sediakan Test Connection terhadap endpoint Odoo 19 JSON-2 `POST /json/2/res.users/context_get`, menggunakan Bearer API Key dan header database bila diperlukan.
+6. Wajib HTTPS untuk koneksi non-localhost. Simpan status, pesan, dan waktu pengujian.
+7. Tahap ini tidak membaca, mengirim, atau menyinkronkan data RO.
+
+**Alasan:**
+JSON-2 adalah external API Odoo 19 yang menggunakan Bearer API Key. Endpoint `res.users/context_get` tanpa ID dapat mengidentifikasi context user dari API Key, sehingga cocok untuk uji autentikasi read-only. Kunci enkripsi terpisah mencegah ketergantungan langsung pada rotasi Django SECRET_KEY.
+
+**Dampak PRD:** Menambahkan kebutuhan, batasan keamanan, dan kriteria penerimaan pengaturan koneksi tahap pertama.
+
+**Dampak DDS/DDL/database:** Menambahkan model singleton `OdooConnectionSetting`, migration `0008_odooconnectionsetting.py`, endpoint Administrator, protokol JSON-2, dan konfigurasi environment.
+
+**Dampak kode:** Menambahkan dependensi `requests` dan `cryptography`, halaman `templates/admin_tools/odoo_connection.html`, menu dashboard Administrator, serta view pengaturan dan Test Connection.
+
+**Status implementasi dan pengujian:** Source dan dokumentasi diperbarui pada branch `main`. Belum diuji dengan instance Odoo pengguna, belum dilakukan Docker build, penerapan migration, atau verifikasi browser/server. Jangan menyatakan koneksi berhasil sebelum Test Connection dijalankan pada lingkungan pengguna.
+
+**Catatan operasional:** Pemilik server harus membuat dan menyimpan `ODOO_API_ENCRYPTION_KEY` secara aman pada file `.env` server sebelum menggunakan halaman ini. Kunci harus dicadangkan; jika hilang, API Key tersimpan harus dimasukkan ulang.
+
+**Referensi teknis:** Dokumentasi resmi Odoo 19 External JSON-2 API: https://www.odoo.com/documentation/19.0/developer/reference/external_api.html
