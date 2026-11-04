@@ -1,32 +1,23 @@
 {% extends "base.html" %}
 {% block title %}{{ page_title }}{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-  <div><h1 class="h3 mb-1">{{ page_title }}</h1><p class="text-muted mb-0">Tentukan nama grup dan hak akses yang diberikan.</p></div>
-  <a class="btn btn-outline-secondary" href="{% url 'admin_role_list' %}">Kembali</a>
-</div>
-{% if is_protected %}<div class="alert alert-info">Ini adalah role inti aplikasi. Nama role dikunci, tetapi permission tetap dapat diatur. Pastikan perubahan permission tidak menghilangkan akses penting.</div>{% endif %}
-<div class="card shadow-sm border-0"><div class="card-body p-4"><form method="post">{% csrf_token %}
-  {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
-  <div class="mb-4"><label class="form-label fw-semibold" for="{{ form.name.id_for_label }}">Nama Role</label>{{ form.name }}{% if form.name.help_text %}<div class="form-text">{{ form.name.help_text }}</div>{% endif %}{% for error in form.name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>
-  <div class="d-flex flex-wrap justify-content-between align-items-center mb-2"><h2 class="h6 mb-0">Permission</h2><span class="text-muted small">Pilih hak akses yang diberikan ke role ini.</span></div>
-  <div class="mb-3">
-    <label class="form-label fw-semibold" for="permissionFilter">Filter permission berdasarkan kata</label>
-    <div class="input-group">
-      <span class="input-group-text"><i class="fas fa-search"></i></span>
-      <input type="search" class="form-control" id="permissionFilter" placeholder="Contoh: view, add, change, delete..." autocomplete="off">
-      <button class="btn btn-primary" type="button" id="applyPermissionFilter"><i class="fas fa-filter me-1"></i>Filter</button>
-      <button class="btn btn-outline-secondary" type="button" id="clearPermissionFilter">Bersihkan</button>
+<section class="crud-page">
+  <header class="crud-heading"><div><h1>{{ page_title }}</h1><p>Tentukan nama grup dan hak akses yang diberikan.</p></div><a class="btn btn-outline-secondary" href="{% url 'admin_role_list' %}">Kembali ke daftar</a></header>
+  {% if is_protected %}<div class="crud-note">Ini adalah role inti aplikasi. Nama role dikunci, tetapi permission tetap dapat diatur. Pastikan perubahan tidak menghilangkan akses penting.</div>{% endif %}
+  <section class="crud-panel crud-form-panel"><form method="post">{% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="crud-field"><label class="form-label" for="{{ form.name.id_for_label }}">Nama Role</label>{{ form.name }}{% if form.name.help_text %}<div class="form-text">{{ form.name.help_text }}</div>{% endif %}{% for error in form.name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>
+    <div class="crud-panel__heading mt-4"><div><h2>Permission</h2><p>Pilih hak akses yang diberikan ke role ini.</p></div></div>
+    <div class="crud-field">
+      <label class="form-label" for="permissionFilter">Filter permission berdasarkan kata</label>
+      <div class="crud-toolbar crud-permission-filter"><div class="crud-search"><input type="search" class="form-control" id="permissionFilter" placeholder="Contoh: view, add, change, delete..." autocomplete="off"></div><button class="btn btn-outline-primary" type="button" id="applyPermissionFilter">Filter</button><button class="btn btn-quiet" type="button" id="clearPermissionFilter">Bersihkan</button></div>
+      <div class="form-text">Ketik kata kunci lalu terapkan filter. Pilihan yang sudah dicentang tetap dipertahankan.</div><div class="small text-muted mt-1" id="permissionFilterCount" aria-live="polite"></div>
     </div>
-    <div class="form-text">Ketik kata kunci lalu klik Filter. Pencarian tidak membedakan huruf besar/kecil.</div>
-    <div class="small text-muted mt-1" id="permissionFilterCount" aria-live="polite"></div>
-  </div>
-  <div class="border rounded-3 p-3 bg-light" style="max-height: 520px; overflow-y: auto;"><div class="row g-2" id="permissionChoices">
-  {% for choice in form.permissions %}<div class="col-12 col-md-6 col-xl-4 permission-option" data-permission-text="{{ choice.choice_label|lower }}"><div class="form-check">{{ choice.tag }}<label class="form-check-label ms-1" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div></div>{% endfor %}
-  </div></div>
-  {% for error in form.permissions.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-  <div class="d-flex gap-2 mt-4"><button class="btn btn-primary" type="submit"><i class="fas fa-save me-1"></i>Simpan Role</button><a class="btn btn-light border" href="{% url 'admin_role_list' %}">Batal</a></div>
-</form></div></div>
+    <div class="crud-choice-panel crud-permission-panel"><div class="crud-permission-grid" id="permissionChoices">{% for choice in form.permissions %}<div class="permission-option" data-permission-text="{{ choice.choice_label|lower }}"><div class="form-check">{{ choice.tag }}<label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div></div>{% endfor %}</div></div>
+    {% for error in form.permissions.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    <div class="crud-form-actions"><button class="btn btn-primary" type="submit">Simpan Role</button><a class="btn btn-quiet" href="{% url 'admin_role_list' %}">Batal</a></div>
+  </form></section>
+</section>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const filter = document.getElementById("permissionFilter");
@@ -34,30 +25,19 @@ document.addEventListener("DOMContentLoaded", function () {
   const clearButton = document.getElementById("clearPermissionFilter");
   const count = document.getElementById("permissionFilterCount");
   const options = Array.from(document.querySelectorAll(".permission-option"));
-
   function applyPermissionFilter() {
     const keyword = filter.value.trim().toLocaleLowerCase();
     let visible = 0;
     options.forEach(function (option) {
       const matches = !keyword || (option.dataset.permissionText || "").includes(keyword);
-      option.classList.toggle("d-none", !matches);
+      option.hidden = !matches;
       if (matches) visible += 1;
     });
     count.textContent = "Menampilkan " + visible + " dari " + options.length + " permission.";
   }
-
   applyButton.addEventListener("click", applyPermissionFilter);
-  filter.addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      applyPermissionFilter();
-    }
-  });
-  clearButton.addEventListener("click", function () {
-    filter.value = "";
-    applyPermissionFilter();
-    filter.focus();
-  });
+  filter.addEventListener("keydown", function (event) { if (event.key === "Enter") { event.preventDefault(); applyPermissionFilter(); } });
+  clearButton.addEventListener("click", function () { filter.value = ""; applyPermissionFilter(); filter.focus(); });
   applyPermissionFilter();
 });
 </script>
