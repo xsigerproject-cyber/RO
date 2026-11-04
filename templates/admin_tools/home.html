@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Administrasi{% endblock %}
 {% block content %}
-<div class="mb-4"><h1 class="h3 mb-1">Administrasi</h1><p class="text-muted mb-0">Pengelolaan akun dan pemeliharaan database. Hanya Administrator.</p></div>
-
-<div class="row g-3 mb-4">
-  <div class="col-md-4"><div class="card shadow-sm"><div class="card-body"><div class="text-muted">Total User</div><div class="fs-2 fw-bold">{{ user_count }}</div></div></div></div>
-  <div class="col-md-4"><div class="card shadow-sm"><div class="card-body"><div class="text-muted">User Aktif</div><div class="fs-2 fw-bold">{{ active_user_count }}</div></div></div></div>
-  <div class="col-md-4"><div class="card shadow-sm"><div class="card-body"><div class="text-muted">File Backup</div><div class="fs-2 fw-bold">{{ backup_count }}</div></div></div></div>
-</div>
-<div class="row g-3">
-  <div class="col-md-4"><a class="card card-body h-100 text-decoration-none" href="{% url 'admin_user_list' %}"><h5><i class="fas fa-users me-2"></i>Manajemen User</h5><p class="text-muted mb-0">CRUD akun, role, status, dan reset password.</p></a></div>
-  <div class="col-md-4"><a class="card card-body h-100 text-decoration-none" href="{% url 'admin_role_list' %}"><h5><i class="fas fa-user-shield me-2"></i>Manajemen Role</h5><p class="text-muted mb-0">Buat grup, atur permission, dan pantau user per role.</p></a></div>
-  <div class="col-md-4"><a class="card card-body h-100 text-decoration-none" href="{% url 'admin_backup' %}"><h5><i class="fas fa-database me-2"></i>Backup Database</h5><p class="text-muted mb-0">Buat dan unduh backup PostgreSQL.</p></a></div>
-  <div class="col-md-4"><a class="card card-body h-100 text-decoration-none" href="{% url 'admin_restore' %}"><h5><i class="fas fa-clock-rotate-left me-2"></i>Restore Database</h5><p class="text-muted mb-0">Pulihkan database dari backup PostgreSQL.</p></a></div>
-</div>
+<section class="crud-page">
+  <header class="crud-heading"><div><h1>Administrasi</h1><p>Pengelolaan akun dan pemeliharaan database. Akses khusus Administrator.</p></div></header>
+  <div class="master-overview mb-4">
+    <div class="master-overview__item"><span class="master-overview__label">Total User</span><strong class="master-overview__value">{{ user_count }}</strong></div>
+    <div class="master-overview__item"><span class="master-overview__label">User Aktif</span><strong class="master-overview__value">{{ active_user_count }}</strong></div>
+    <div class="master-overview__item"><span class="master-overview__label">File Backup</span><strong class="master-overview__value">{{ backup_count }}</strong></div>
+  </div>
+  <div class="row g-3">
+    <div class="col-12 col-md-6"><a class="crud-panel d-block h-100 p-4 text-decoration-none" href="{% url 'admin_user_list' %}"><h2 class="h5">Manajemen User</h2><p class="mb-0 text-muted">Kelola akun, role, status, dan reset password.</p></a></div>
+    <div class="col-12 col-md-6"><a class="crud-panel d-block h-100 p-4 text-decoration-none" href="{% url 'admin_role_list' %}"><h2 class="h5">Manajemen Role</h2><p class="mb-0 text-muted">Buat grup, atur permission, dan pantau user per role.</p></a></div>
+    <div class="col-12 col-md-6"><a class="crud-panel d-block h-100 p-4 text-decoration-none" href="{% url 'admin_backup' %}"><h2 class="h5">Backup Database</h2><p class="mb-0 text-muted">Buat dan unduh backup PostgreSQL.</p></a></div>
+    <div class="col-12 col-md-6"><a class="crud-panel d-block h-100 p-4 text-decoration-none" href="{% url 'admin_restore' %}"><h2 class="h5">Restore Database</h2><p class="mb-0 text-muted">Pulihkan database dari backup PostgreSQL.</p></a></div>
+  </div>
+</section>
 {% endblock %}
