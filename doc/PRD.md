@@ -416,3 +416,10 @@ Kriteria penerimaan:
 - Filter permission pada Manajemen Role tetap berfungsi setelah penyegaran visual.
 - Penyegaran visual tidak mengubah aturan bisnis, validasi server-side, hak akses, endpoint, relasi database, maupun proses import/export.
 - Kriteria penerimaan visual harus diperiksa pada lima tema dan breakpoint desktop, tablet, serta mobile sebelum dinyatakan tervalidasi. Pemeriksaan source code saja tidak cukup untuk mengklaim hasil render telah teruji.
+## Perubahan Master Dapur — Operation Type Kirim dan Terima
+
+Master Dapur mempertahankan field `operation_type` yang sudah ada dan menambahkan dua field teks bebas:
+- `operation_type_kirim`: nilai operation type untuk proses pengiriman.
+- `operation_type_terima`: nilai operation type untuk proses penerimaan.
+
+Ketiga field ditampilkan pada form Tambah/Ubah Dapur dan daftar Dapur. Nilai kedua field baru dapat dicari pada daftar, serta ikut dalam template impor, proses impor, dan ekspor Excel. Perubahan ini tidak mengubah aturan transaksi RO atau field `document`.
