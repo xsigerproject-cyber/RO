@@ -417,7 +417,7 @@ def odoo_connection_settings(request):
                             raise ValueError("Odoo mengalihkan koneksi. Periksa URL dasar dan HTTPS.")
                         else:
                             raise ValueError(f"Odoo merespons HTTP {response.status_code}. Periksa URL dan database.")
-                    except (requests.RequestException, ValueError, InvalidToken) as exc:
+                    except (requests.RequestException, ValueError, InvalidToken, UnicodeError) as exc:
                         config.connection_status = "failed"
                         config.connection_message = str(exc)[:500]
                         messages.error(request, config.connection_message)
