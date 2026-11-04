@@ -335,6 +335,15 @@ class OdooConnectionForm(forms.Form):
     username = forms.CharField(label="User Integrasi", max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}))
     api_key = forms.CharField(label="API Key", required=False, strip=False, widget=forms.PasswordInput(attrs={"class": "form-control", "autocomplete": "new-password", "placeholder": "Kosongkan untuk mempertahankan API Key lama"}))
 
+    def clean_base_url(self):
+        value = self.cleaned_data["base_url"].rstrip("/")
+        parsed = urlparse(value)
+        if parsed.scheme != "https" and parsed.hostname not in ("localhost", "127.0.0.1"):
+            raise forms.ValidationError("Koneksi ke Odoo wajib menggunakan HTTPS; HTTP hanya diizinkan untuk localhost.")
+        if parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.path not in ("", "/"):
+            raise forms.ValidationError("Masukkan URL dasar Odoo saja, tanpa kredensial, path, query, atau fragment.")
+        return value
+
 
 def _odoo_fernet():
     encryption_key = getattr(settings, "ODOO_API_ENCRYPTION_KEY", "")
@@ -342,7 +351,7 @@ def _odoo_fernet():
         raise ValueError("Kunci enkripsi Odoo belum dikonfigurasi pada environment server.")
     try:
         return Fernet(encryption_key.encode("ascii"))
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, UnicodeError):
         raise ValueError("Format ODOO_API_ENCRYPTION_KEY tidak valid. Gunakan kunci Fernet yang dibuat oleh cryptography.")
 
 
