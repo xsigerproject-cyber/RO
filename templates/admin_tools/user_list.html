@@ -1,11 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Manajemen User{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4"><div><h1 class="h3 mb-1">Manajemen User</h1><p class="text-muted mb-0">Atur akun dan role pengguna.</p></div><a class="btn btn-primary" href="{% url 'admin_user_create' %}"><i class="fas fa-plus me-1"></i>Tambah User</a></div>
-<div class="card shadow-sm"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>Username</th><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th class="text-end">Aksi</th></tr></thead><tbody>
-{% for item in users %}
-<tr><td class="fw-semibold">{{ item.username }}</td><td>{{ item.get_full_name|default:"-" }}</td><td>{{ item.email|default:"-" }}</td><td>{% for group in item.groups.all %}<span class="badge bg-secondary me-1">{{ group.name }}</span>{% empty %}<span class="text-muted">Belum ada role</span>{% endfor %}{% if item.is_superuser %}<span class="badge bg-danger">Superuser</span>{% endif %}</td><td>{% if item.is_active %}<span class="badge bg-success">Aktif</span>{% else %}<span class="badge bg-secondary">Nonaktif</span>{% endif %}</td><td class="text-end text-nowrap"><a class="btn btn-sm btn-outline-primary" href="{% url 'admin_user_edit' item.pk %}">Ubah</a> <a class="btn btn-sm btn-outline-warning" href="{% url 'admin_user_password' item.pk %}">Ganti Password</a>{% if item.pk != request.user.pk and not item.is_superuser %}<form class="d-inline" method="post" action="{% url 'admin_user_delete' item.pk %}" onsubmit="return confirm('Hapus user {{ item.username|escapejs }}?')">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Hapus</button></form>{% endif %}</td></tr>
-{% empty %}<tr><td colspan="6" class="text-center text-muted py-4">Belum ada user.</td></tr>{% endfor %}
-</tbody></table></div></div>
-<a class="btn btn-link mt-3" href="{% url 'admin_home' %}">← Kembali ke Administrasi</a>
+<section class="crud-page">
+  <header class="crud-heading"><div><h1>Manajemen User</h1><p>Kelola akun, role, status, dan akses pengguna.</p></div><a class="btn btn-primary" href="{% url 'admin_user_create' %}">Tambah User</a></header>
+  <section class="crud-panel">
+    <div class="crud-panel__heading"><div><h2>Daftar User</h2><p>{% if request.GET.q %}Hasil pencarian untuk “{{ request.GET.q }}”.{% else %}Cari berdasarkan username, nama, atau email.{% endif %}</p></div><span class="crud-count">{{ users|length }} hasil</span></div>
+    <form method="get" class="crud-toolbar">
+      <div class="crud-search"><label class="visually-hidden" for="userSearch">Cari user</label><input id="userSearch" class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Username, nama, atau email..."></div>
+      <button class="btn btn-outline-primary" type="submit">Cari</button>
+      {% if request.GET.q %}<a class="btn btn-quiet" href="{% url 'admin_user_list' %}">Reset</a>{% endif %}
+    </form>
+    <div class="table-responsive"><table class="table table-hover align-middle crud-table mb-0">
+      <thead><tr><th>Username</th><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th class="crud-actions-heading">Aksi</th></tr></thead>
+      <tbody>
+      {% for item in users %}<tr>
+        <td class="fw-semibold">{{ item.username }}</td><td>{{ item.get_full_name|default:"-" }}</td><td>{{ item.email|default:"-" }}</td>
+        <td><div class="role-labels">{% for group in item.groups.all %}<span class="status-label status-label--muted">{{ group.name }}</span>{% empty %}<span class="text-muted">Belum ada role</span>{% endfor %}{% if item.is_superuser %}<span class="status-label status-label--danger">Superuser</span>{% endif %}</div></td>
+        <td><span class="status-label {% if item.is_active %}status-label--success{% else %}status-label--muted{% endif %}">{% if item.is_active %}Aktif{% else %}Nonaktif{% endif %}</span></td>
+        <td class="crud-actions"><a class="btn btn-sm btn-outline-primary" href="{% url 'admin_user_edit' item.pk %}">Ubah</a> <a class="btn btn-sm btn-outline-secondary" href="{% url 'admin_user_password' item.pk %}">Ganti Password</a>{% if item.pk != request.user.pk and not item.is_superuser %}<form class="d-inline" method="post" action="{% url 'admin_user_delete' item.pk %}" onsubmit="return confirm('Hapus user {{ item.username|escapejs }}? Tindakan ini tidak dapat dibatalkan.')">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Hapus</button></form>{% endif %}</td>
+      </tr>{% empty %}<tr><td colspan="6" class="crud-empty"><strong>{% if request.GET.q %}User tidak ditemukan{% else %}Belum ada user{% endif %}</strong><span>{% if request.GET.q %}Periksa kembali kata kunci pencarian.{% else %}Tambahkan akun pengguna untuk memberikan akses aplikasi.{% endif %}</span></td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </section>
+</section>
 {% endblock %}
