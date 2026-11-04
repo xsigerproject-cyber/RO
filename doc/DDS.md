@@ -644,3 +644,14 @@ Perubahan CSS dan template telah disimpan pada branch `main`. Belum dilakukan br
 - Filter permission Role yang berjalan di browser dipertahankan; penyegaran tampilan tidak boleh mengubah checkbox yang dipilih atau perilaku filter.
 - Tidak ada perubahan model atau migration yang diperlukan untuk lingkup ini.
 - Verifikasi browser, aksesibilitas, lima tema, dan breakpoint tetap menjadi pekerjaan validasi terpisah; jangan menyatakan telah lulus tanpa bukti.
+## 14. Penambahan Field Operation Type pada Master Dapur
+
+Model `Dapur` mempertahankan `operation_type` dan menambahkan:
+| Kolom | Tipe Django | Constraint |
+|---|---|---|
+| operation_type_kirim | CharField(120) | Wajib, teks bebas |
+| operation_type_terima | CharField(120) | Wajib, teks bebas |
+
+Kedua field baru merupakan teks bebas, mengikuti tipe dan batas panjang field `operation_type`. Migration `0007_dapur_operation_types.py` menambahkan kedua kolom; record Dapur yang sudah ada diisi string kosong saat migration agar data lama tetap terjaga. Setelah migration, form baru meminta nilai field sesuai validasi CharField wajib.
+
+Konfigurasi CRUD Dapur memasukkan kedua field pada daftar dan pencarian. Karena form Dapur menggunakan ModelForm dengan `fields = "__all__"`, kedua field otomatis tersedia pada form tambah dan ubah. Konfigurasi field yang sama juga mengikutsertakannya pada header/baris template impor, validasi impor, dan ekspor Excel. Tidak ada perubahan pada Jadwal, Toko, Template Produk, RO, endpoint, atau otorisasi.
