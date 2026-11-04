@@ -385,7 +385,7 @@ def odoo_connection_settings(request):
                         parsed = urlparse(config.base_url)
                         if parsed.scheme not in ("https", "http") or not parsed.netloc or parsed.username or parsed.password:
                             raise ValueError("URL Odoo tidak valid.")
-                        if parsed.scheme != "https" and parsed.hostname not in ("localhost", "127.0.0.1"):
+                        if parsed.scheme != "https" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
                             raise ValueError("Koneksi Odoo wajib menggunakan HTTPS.")
                         key = _odoo_fernet().decrypt(config.api_key_encrypted.encode("ascii")).decode("utf-8")
                         headers = {
