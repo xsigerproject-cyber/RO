@@ -400,3 +400,19 @@ Kriteria penerimaan:
 47. Dashboard hanya menampilkan jumlah master yang bersumber dari data aplikasi.
 48. Komponen utama menggunakan permukaan datar dan ikon secara fungsional, bukan dekoratif.
 49. Verifikasi visual harus mencakup lima tema serta breakpoint desktop, tablet, dan mobile sebelum dinyatakan lulus.
+
+
+## 14. Pencarian User dan Konsistensi Antarmuka CRUD
+
+### 14.1 Pencarian Manajemen User
+- Halaman daftar User menyediakan pencarian berdasarkan username, nama depan, nama belakang, dan email.
+- Pencarian menggunakan parameter query `q`, tidak membedakan huruf besar/kecil, dan mempertahankan kata kunci saat hasil ditampilkan.
+- Pencarian tidak mengubah cakupan data maupun hak akses: hanya Administrator yang dapat mengakses halaman dan hasil pencarian.
+- Kriteria penerimaan: kata kunci yang cocok pada salah satu field menampilkan user terkait; kata kunci kosong menampilkan seluruh user; hasil kosong menampilkan empty state yang informatif.
+
+### 14.2 Konsistensi antarmuka CRUD
+- Daftar dan form Master Data, User, dan Role mengikuti token semantik pada `DESIGN.md` untuk permukaan, teks, border, fokus, dan status.
+- Pola heading, tombol utama/sekunder, tabel, form, pesan validasi, empty state, dan konfirmasi penghapusan harus konsisten serta responsif.
+- Filter permission pada Manajemen Role tetap berfungsi setelah penyegaran visual.
+- Penyegaran visual tidak mengubah aturan bisnis, validasi server-side, hak akses, endpoint, relasi database, maupun proses import/export.
+- Kriteria penerimaan visual harus diperiksa pada lima tema dan breakpoint desktop, tablet, serta mobile sebelum dinyatakan tervalidasi. Pemeriksaan source code saja tidak cukup untuk mengklaim hasil render telah teruji.
