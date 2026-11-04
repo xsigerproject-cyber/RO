@@ -422,3 +422,20 @@ Lihat riwayat commit branch `main` untuk `DESIGN.md`, template dashboard, CSS te
 **Status implementasi dan pengujian:** Source code dan dokumen diperbarui pada branch `main`. Belum dijalankan `makemigrations --check`, `migrate`, automated tests, Docker build, atau verifikasi browser/server. Migration perlu diuji pada salinan database sebelum deployment.
 
 **Referensi commit:** Lihat riwayat branch `main` untuk perubahan model, CRUD, migration, dan dokumentasi.
+
+
+## 19. 2026-11-04 — Adaptasi desain aplikasi ke SAP Fiori-inspired
+
+**Konteks/masalah:** Pemilik produk memberikan file `sap_fiori_erp_dashboard_crud.html` dan meminta seluruh aplikasi RO menggunakan gaya visual yang semirip mungkin, mencakup font, ikon, tema, dashboard, dan komponen CRUD.
+
+**Keputusan yang disetujui:** Gunakan file sebagai referensi desain utama. Adaptasi meliputi shell/header biru gelap, sidebar navigasi, font Inter, ikon Font Awesome, aksen biru Fiori, komponen CRUD, dan dashboard tile. Pertahankan tema yang sudah ada (Light, Dark, Ocean, Forest, Sunset), aturan bisnis, hak akses, endpoint, serta skema database.
+
+**Batas adaptasi:** Tidak menyalin modul Material Management, KPI penjualan, stok, purchase order, chart, data contoh, atau fitur demo yang tidak ada di aplikasi RO. Dashboard hanya menampilkan hitungan master yang disediakan view dan pintasan transaksi yang sudah tersedia. Tidak menambahkan pencarian global/notifikasi semu yang tidak terhubung ke backend.
+
+**Dampak PRD:** Menambahkan arah desain SAP Fiori-inspired dan batasan lingkup presentasi.
+
+**Dampak DDS/DDL:** Mengubah template shell/dashboard dan CSS; tidak mengubah backend, model, migration, endpoint, atau proses.
+
+**Status implementasi dan pengujian:** Source template, CSS, dan dokumen diperbarui pada branch main. Belum dilakukan browser rendering, click-through, pengujian lima tema, breakpoint, automated tests, Docker build, atau runtime server. Kesamaan visual hasil akhir belum tervalidasi.
+
+**Referensi commit:** Lihat riwayat branch main untuk perubahan ini.
