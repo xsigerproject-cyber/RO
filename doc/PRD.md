@@ -428,3 +428,25 @@ Ketiga field ditampilkan pada form Tambah/Ubah Dapur dan daftar Dapur. Nilai ked
 ## 15. Arah Desain SAP Fiori-inspired
 
 File `sap_fiori_erp_dashboard_crud.html` menjadi referensi visual untuk shell/header, sidebar, tipografi Inter, ikon, warna, komponen CRUD, dan pola dashboard. Adaptasi mengikuti kebutuhan RO dan tidak menyalin data/fitur demo Material Management. Dashboard hanya menampilkan jumlah master yang tersedia dari backend dan pintasan transaksi yang memang diizinkan. Penyegaran tampilan tidak mengubah role, aturan bisnis, endpoint, atau skema database. Tema Light, Dark, Ocean, Forest, dan Sunset tetap didukung.
+
+## 16. Pengaturan Koneksi API Odoo (Tahap 1)
+
+Modul Administrator menyediakan satu konfigurasi koneksi ke Odoo 19 JSON-2: URL dasar, nama database (opsional), identitas user integrasi, dan API Key. Tahap ini hanya mencakup penyimpanan konfigurasi dan **Test Connection**; belum mencakup pengambilan, pengiriman, atau sinkronisasi data RO.
+
+- API Key wajib diisi pada konfigurasi pertama. Pada perubahan berikutnya, kolom boleh dikosongkan untuk mempertahankan key yang tersimpan.
+- API Key disimpan terenkripsi menggunakan kunci Fernet dari environment server (`ODOO_API_ENCRYPTION_KEY`). Kunci enkripsi tidak boleh disimpan di repository.
+- API Key tidak pernah ditampilkan kembali pada halaman pengaturan.
+- Pengaturan dan pengujian koneksi hanya dapat dilakukan oleh Administrator/superuser.
+- Test Connection menggunakan Odoo JSON-2 `POST /json/2/res.users/context_get` dengan Bearer API Key. Database dikirim melalui header `X-Odoo-Database` bila diisi.
+- URL produksi wajib HTTPS. HTTP hanya diizinkan untuk localhost/127.0.0.1 pada pengembangan.
+- Status, pesan hasil, dan waktu pengujian terakhir disimpan.
+- User integrasi sebaiknya akun bot khusus dengan hak akses minimum. API Key Odoo memiliki masa berlaku dan perlu dirotasi sesuai kebijakan Odoo.
+
+Kriteria penerimaan:
+50. Menu Pengaturan API Odoo hanya dapat diakses Administrator/superuser.
+51. Administrator dapat menyimpan URL, database opsional, user integrasi, dan API Key.
+52. API Key terenkripsi saat disimpan dan tidak pernah dirender kembali pada halaman.
+53. API Key lama tetap dipakai jika kolom API Key dikosongkan saat mengubah konfigurasi.
+54. Test Connection memanggil endpoint JSON-2 read-only `res.users/context_get`, menampilkan hasil berhasil/gagal, dan mencatat waktu pengujian.
+55. Jika kunci enkripsi belum tersedia atau tidak valid, aplikasi menolak menyimpan API Key dan menampilkan pesan yang dapat ditindaklanjuti.
+56. Fitur ini tidak mengirim atau membaca data RO.
