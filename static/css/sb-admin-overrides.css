@@ -35,3 +35,16 @@ textarea.form-control { min-height: 100px; }
   .theme-btn { width: 32px; height: 32px; flex-basis: 32px; padding: 7px; }
   #layoutSidenav_content main { padding-left: 1rem !important; padding-right: 1rem !important; }
 }
+
+
+/* Fiori shell alignment: keep structural SB Admin behavior, restyle surfaces. */
+body { background:var(--bg-primary); }
+#layoutSidenav #layoutSidenav_nav { width:15rem; }
+#layoutSidenav #layoutSidenav_content { margin-left:0; }
+.sb-topnav { z-index:1039; }
+.fiori-shell .theme-btn { background-clip:content-box; }
+.fiori-shell .theme-btn:focus-visible { outline-color:#fff; }
+.user-anonymous .fiori-shell .navbar-brand { min-width:0; }
+@media(max-width:991.98px) {
+  #layoutSidenav #layoutSidenav_nav { width:15rem; }
+}
