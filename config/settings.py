@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-dev-key-change-me")
+ODOO_API_ENCRYPTION_KEY = os.getenv("ODOO_API_ENCRYPTION_KEY", "").strip()
 DEBUG = os.getenv("DEBUG", "0") == "1"
 ALLOWED_HOSTS = [x.strip() for x in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")]
 INSTALLED_APPS = [
