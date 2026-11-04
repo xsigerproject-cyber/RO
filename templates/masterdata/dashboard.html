@@ -1,45 +1,27 @@
 {% extends "base.html" %}
-{% block title %}Dashboard | RO{% endblock %}
+{% block title %}Dashboard | RO Operations{% endblock %}
 {% block content %}
-<section class="page-heading mb-4">
-  <div>
-    <p class="eyebrow mb-2">RUANG KERJA</p>
-    <h1 class="page-title mb-1">Dashboard</h1>
-    <p class="page-description mb-0">Akses cepat untuk transaksi RO dan data operasional.</p>
+<section class="fiori-page-heading">
+  <div><p class="fiori-eyebrow">WORKSPACE / OVERVIEW</p><h1>Dashboard</h1><p>Ringkasan akses dan data operasional Requisition Order.</p></div>
+  <div class="fiori-page-actions">
+    <a class="btn btn-outline-primary" href="{% url 'ro_daftar' %}"><i class="fa-solid fa-list-check me-2"></i>Daftar RO</a>
+    {% if is_administrator_user %}<a class="btn btn-primary" href="{% url 'ro_transaksi' %}"><i class="fa-solid fa-plus me-2"></i>Buat RO</a>{% endif %}
   </div>
 </section>
-<section class="workflow-panel mb-4" aria-labelledby="workflow-heading">
-  <div class="workflow-panel__intro">
-    <div>
-      <h2 id="workflow-heading" class="section-title mb-1">Transaksi RO</h2>
-      <p class="text-secondary mb-0">Mulai input pesanan atau tinjau transaksi yang sudah tersimpan.</p>
-    </div>
-  </div>
-  <div class="workflow-actions">
-    {% if is_administrator_user %}<a class="btn btn-primary btn-lg" href="{% url 'ro_transaksi' %}">Buat RO</a>{% endif %}
-    <a class="btn btn-outline-primary btn-lg" href="{% url 'ro_daftar' %}">Daftar RO</a>
+<section class="fiori-section">
+  <div class="fiori-section-heading"><div><h2>Ringkasan Data Master</h2><p>Jumlah record yang tersimpan saat ini.</p></div><span class="fiori-section-meta"><i class="fa-regular fa-clock me-1"></i>Data saat halaman dimuat</span></div>
+  <div class="fiori-kpi-grid">
+    <a class="fiori-kpi" href="{% url 'master_list' 'dapur' %}"><span class="fiori-kpi-icon"><i class="fa-solid fa-fire-burner"></i></span><span class="fiori-kpi-label">Dapur</span><strong>{{ counts.dapur }}</strong><span class="fiori-kpi-link">Buka master <i class="fa-solid fa-arrow-right"></i></span></a>
+    <a class="fiori-kpi" href="{% url 'master_list' 'jadwal' %}"><span class="fiori-kpi-icon"><i class="fa-regular fa-calendar-days"></i></span><span class="fiori-kpi-label">Jadwal</span><strong>{{ counts.jadwal }}</strong><span class="fiori-kpi-link">Buka master <i class="fa-solid fa-arrow-right"></i></span></a>
+    <a class="fiori-kpi" href="{% url 'master_list' 'toko' %}"><span class="fiori-kpi-icon"><i class="fa-solid fa-store"></i></span><span class="fiori-kpi-label">Toko</span><strong>{{ counts.toko }}</strong><span class="fiori-kpi-link">Buka master <i class="fa-solid fa-arrow-right"></i></span></a>
+    <a class="fiori-kpi" href="{% url 'master_list' 'produk' %}"><span class="fiori-kpi-icon"><i class="fa-solid fa-boxes-stacked"></i></span><span class="fiori-kpi-label">Template Produk</span><strong>{{ counts.produk }}</strong><span class="fiori-kpi-link">Buka master <i class="fa-solid fa-arrow-right"></i></span></a>
   </div>
 </section>
-<section aria-labelledby="master-heading">
-  <div class="section-heading mb-3">
-    <div>
-      <h2 id="master-heading" class="section-title mb-1">Data master</h2>
-      <p class="text-secondary mb-0">Jumlah record saat ini dan akses ke masing-masing master.</p>
-    </div>
-  </div>
-  <div class="master-overview">
-    <a class="master-overview__item" href="{% url 'master_list' 'dapur' %}">
-      <span class="master-overview__label">Dapur</span><strong class="master-overview__value">{{ counts.dapur }}</strong><span class="master-overview__action">Buka data</span>
-    </a>
-    <a class="master-overview__item" href="{% url 'master_list' 'jadwal' %}">
-      <span class="master-overview__label">Jadwal</span><strong class="master-overview__value">{{ counts.jadwal }}</strong><span class="master-overview__action">Buka data</span>
-    </a>
-    <a class="master-overview__item" href="{% url 'master_list' 'toko' %}">
-      <span class="master-overview__label">Toko</span><strong class="master-overview__value">{{ counts.toko }}</strong><span class="master-overview__action">Buka data</span>
-    </a>
-    <a class="master-overview__item" href="{% url 'master_list' 'produk' %}">
-      <span class="master-overview__label">Template Produk</span><strong class="master-overview__value">{{ counts.produk }}</strong><span class="master-overview__action">Buka data</span>
-    </a>
+<section class="fiori-section fiori-workflow">
+  <div class="fiori-section-heading"><div><h2>Transaksi Requisition Order</h2><p>Pilih pekerjaan yang ingin dilanjutkan.</p></div></div>
+  <div class="fiori-workflow-links">
+    {% if is_administrator_user %}<a href="{% url 'ro_transaksi' %}"><span class="workflow-icon"><i class="fa-solid fa-file-circle-plus"></i></span><span><strong>Buat RO</strong><small>Mulai input pesanan baru</small></span><i class="fa-solid fa-chevron-right ms-auto"></i></a>{% endif %}
+    <a href="{% url 'ro_daftar' %}"><span class="workflow-icon"><i class="fa-solid fa-clipboard-list"></i></span><span><strong>Daftar RO</strong><small>Lihat transaksi RO yang tersimpan</small></span><i class="fa-solid fa-chevron-right ms-auto"></i></a>
   </div>
 </section>
 {% endblock %}
