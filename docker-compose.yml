@@ -19,6 +19,7 @@ services:
     env_file: .env
     environment:
       DB_BACKUP_DIR: /var/backups/ro
+      ODOO_API_ENCRYPTION_KEY: ${ODOO_API_ENCRYPTION_KEY:-}
     volumes:
       - db_backups:/var/backups/ro
     ports:
