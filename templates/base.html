@@ -4,7 +4,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}RO | Master Data{% endblock %}</title>
+  <title>{% block title %}RO | Operations{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin@7.0.7/dist/css/styles.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
   <link href="{% static 'css/themes.css' %}" rel="stylesheet">
@@ -12,26 +15,31 @@
   {% block extra_css %}{% endblock %}
 </head>
 <body class="sb-nav-fixed {% if request.user.is_authenticated %}user-authenticated{% else %}user-anonymous{% endif %}" data-theme="{{ current_theme|default:'light' }}">
-<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-  <a class="navbar-brand ps-3" href="{% url 'dashboard' %}"><i class="fas fa-layer-group me-2"></i>RO Master Data</a>
-  <button class="btn btn-link btn-sm order-1 order-lg-0 me-3" id="sidebarToggle" aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button>
-  <div class="ms-auto me-3 d-flex align-items-center gap-3">
+<nav class="sb-topnav navbar navbar-expand navbar-dark fiori-shell">
+  <a class="navbar-brand ps-3" href="{% url 'dashboard' %}">
+    <span class="brand-mark"><i class="fa-solid fa-layer-group"></i></span>
+    <span class="brand-copy"><strong>RO Operations</strong><small>Order Management</small></span>
+  </a>
+  <button class="btn btn-link btn-sm order-1 order-lg-0 me-2 shell-toggle" id="sidebarToggle" aria-label="Toggle sidebar"><i class="fa-solid fa-bars"></i></button>
+  <div class="shell-context d-none d-md-flex">Operational Workspace <span>/</span> Requisition Order</div>
+  <div class="ms-auto d-flex align-items-center gap-2 gap-lg-3 pe-2">
     <div class="theme-switcher" aria-label="Pilih tema">
-      <button type="button" class="theme-btn {% if current_theme == 'light' %}active{% endif %}" data-theme="light" title="Light" aria-label="Tema Light"></button>
+      <button type="button" class="theme-btn {% if current_theme == 'light' or not current_theme %}active{% endif %}" data-theme="light" title="Light" aria-label="Tema Light"></button>
       <button type="button" class="theme-btn {% if current_theme == 'dark' %}active{% endif %}" data-theme="dark" title="Dark" aria-label="Tema Dark"></button>
       <button type="button" class="theme-btn {% if current_theme == 'ocean' %}active{% endif %}" data-theme="ocean" title="Ocean" aria-label="Tema Ocean"></button>
       <button type="button" class="theme-btn {% if current_theme == 'forest' %}active{% endif %}" data-theme="forest" title="Forest" aria-label="Tema Forest"></button>
-      <button type="button" class="theme-btn {% if current_theme == 'sunset' %}active{% endif %}" data-theme="sunset" title="Tema Sunset" aria-label="Tema Sunset"></button>
+      <button type="button" class="theme-btn {% if current_theme == 'sunset' %}active{% endif %}" data-theme="sunset" title="Sunset" aria-label="Tema Sunset"></button>
     </div>
     {% if request.user.is_authenticated %}
     <div class="dropdown">
-      <button class="btn btn-link text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="fas fa-user-circle me-1"></i>{{ request.user.username }}
+      <button class="btn shell-user dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="shell-avatar">{{ request.user.username|slice:":1"|upper }}</span>
+        <span class="d-none d-sm-inline">{{ request.user.username }}</span>
       </button>
       <ul class="dropdown-menu dropdown-menu-end">
-        <li><span class="dropdown-item-text small text-muted">Pengguna aktif</span></li>
+        <li><span class="dropdown-item-text small text-muted">Masuk sebagai {{ request.user.username }}</span></li>
         <li><hr class="dropdown-divider"></li>
-        <li><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button></form></li>
+        <li><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="dropdown-item"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Keluar</button></form></li>
       </ul>
     </div>
     {% endif %}
@@ -39,38 +47,38 @@
 </nav>
 <div id="layoutSidenav">
   <div id="layoutSidenav_nav">
-    <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+    <nav class="sb-sidenav accordion sb-sidenav-dark fiori-sidebar" id="sidenavAccordion">
       <div class="sb-sidenav-menu">
         <div class="nav">
-          <div class="sb-sidenav-menu-heading">Menu Utama</div>
-          <a class="nav-link" href="{% url 'dashboard' %}"><div class="sb-nav-link-icon"><i class="fas fa-gauge-high"></i></div>Dashboard</a>
-          <div class="sb-sidenav-menu-heading">Transaksi</div>
-          <a class="nav-link" href="{% url 'ro_transaksi' %}"><div class="sb-nav-link-icon"><i class="fas fa-file-circle-plus"></i></div>Buat RO</a>
-          <a class="nav-link" href="{% url 'ro_daftar' %}"><div class="sb-nav-link-icon"><i class="fas fa-clipboard-list"></i></div>Daftar RO</a>
-          <div class="sb-sidenav-menu-heading">Master Data</div>
-          <a class="nav-link" href="{% url 'master_list' 'dapur' %}"><div class="sb-nav-link-icon"><i class="fas fa-fire-burner"></i></div>Dapur</a>
-          <a class="nav-link" href="{% url 'master_list' 'jadwal' %}"><div class="sb-nav-link-icon"><i class="fas fa-calendar-days"></i></div>Jadwal</a>
-          <a class="nav-link" href="{% url 'master_list' 'toko' %}"><div class="sb-nav-link-icon"><i class="fas fa-store"></i></div>Toko</a>
-          <a class="nav-link" href="{% url 'master_list' 'produk' %}"><div class="sb-nav-link-icon"><i class="fas fa-box"></i></div>Template Produk</a>
-          {% if is_administrator_user %}
-          <div class="sb-sidenav-menu-heading">Administrasi</div>
-          <a class="nav-link" href="{% url 'admin_home' %}"><div class="sb-nav-link-icon"><i class="fas fa-user-shield"></i></div>Administrasi</a>
+          <div class="sb-sidenav-menu-heading">WORKSPACE</div>
+          <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-gauge-high"></i></div>Dashboard</a>
+          <div class="sb-sidenav-menu-heading">TRANSAKSI RO</div>
+          <a class="nav-link {% if request.resolver_match.url_name == 'ro_transaksi' %}active{% endif %}" href="{% url 'ro_transaksi' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-file-circle-plus"></i></div>Buat RO</a>
+          <a class="nav-link {% if request.resolver_match.url_name == 'ro_daftar' %}active{% endif %}" href="{% url 'ro_daftar' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-clipboard-list"></i></div>Daftar RO</a>
+          {% if not is_admin_toko_user %}
+          <div class="sb-sidenav-menu-heading">MASTER DATA</div>
+          <a class="nav-link {% if request.resolver_match.kwargs.kind == 'dapur' %}active{% endif %}" href="{% url 'master_list' 'dapur' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-fire-burner"></i></div>Dapur</a>
+          <a class="nav-link {% if request.resolver_match.kwargs.kind == 'jadwal' %}active{% endif %}" href="{% url 'master_list' 'jadwal' %}"><div class="sb-nav-link-icon"><i class="fa-regular fa-calendar-days"></i></div>Jadwal</a>
+          <a class="nav-link {% if request.resolver_match.kwargs.kind == 'toko' %}active{% endif %}" href="{% url 'master_list' 'toko' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-store"></i></div>Toko</a>
+          <a class="nav-link {% if request.resolver_match.kwargs.kind == 'produk' %}active{% endif %}" href="{% url 'master_list' 'produk' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-boxes-stacked"></i></div>Template Produk</a>
           {% endif %}
-          <div class="sb-sidenav-menu-heading">Akun</div>
-          {% if request.user.is_authenticated %}
-          <form method="post" action="{% url 'logout' %}" class="px-3">{% csrf_token %}<button class="btn btn-sm btn-outline-light w-100 text-start" type="submit"><i class="fas fa-right-from-bracket me-2"></i>Logout</button></form>
+          {% if is_administrator_user %}
+          <div class="sb-sidenav-menu-heading">ADMINISTRASI</div>
+          <a class="nav-link {% if 'admin_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'admin_home' %}"><div class="sb-nav-link-icon"><i class="fa-solid fa-user-shield"></i></div>Administrasi</a>
           {% endif %}
         </div>
       </div>
-      <div class="sb-sidenav-footer"><div class="small">Login sebagai:</div>{{ request.user.username|default:"Pengunjung" }}</div>
+      <div class="sb-sidenav-footer fiori-sidebar-footer">
+        <span class="system-indicator"></span><span><small>RO SYSTEM</small><strong>Operational</strong></span>
+      </div>
     </nav>
   </div>
   <div id="layoutSidenav_content">
-    <main class="container-fluid px-4 py-4">
-      {% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button></div>{% endfor %}{% endif %}
+    <main class="container-fluid fiori-main">
+      {% if messages %}<div class="fiori-messages">{% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button></div>{% endfor %}</div>{% endif %}
       {% block content %}{% endblock %}
     </main>
-    <footer class="py-4 mt-auto"><div class="container-fluid px-4"><div class="d-flex align-items-center justify-content-between small"><div class="text-muted">RO · Master Data</div><div class="text-muted">Django &amp; SB Admin</div></div></div></footer>
+    <footer class="fiori-footer"><span>RO Operations</span><span>Internal Operations Workspace</span></footer>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
