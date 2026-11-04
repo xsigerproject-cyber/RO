@@ -379,3 +379,16 @@ Perubahan source dan dokumentasi dikomit bertahap ke branch `main`. Belum dilaku
 
 **Referensi commit:**
 Lihat riwayat commit branch `main` untuk `DESIGN.md`, template dashboard, CSS tema, dan dokumen ini.
+
+
+## 15. 2026-11-04 — Penyelarasan frontend seluruh halaman CRUD
+
+- **Konteks/masalah:** Setelah baseline desain frontend disetujui, halaman CRUD Master Data, User, dan Role masih memakai sejumlah gaya Bootstrap langsung, pola aksi yang padat, serta belum konsisten antar tema. Daftar User juga belum menyediakan pencarian.
+- **Pilihan yang dibahas:** Memperbarui hanya tampilan; atau memperbarui tampilan sekaligus menambahkan pencarian daftar User.
+- **Keputusan yang disetujui:** Pemilik produk menyetujui seluruh lingkup 1–7: (1) desain daftar master, (2) desain form tambah/ubah, (3) tombol aksi dan konfirmasi hapus, (4) penerapan token tema pada tabel/form/modal/validasi, (5) tampilan Manajemen User, (6) tampilan Manajemen Role dengan filter permission tetap dipertahankan, dan (7) pencarian User.
+- **Alasan:** Menjaga konsistensi pengalaman CRUD dengan DESIGN.md dan mempercepat pencarian akun tanpa mengubah aturan bisnis.
+- **Dampak PRD:** Tambahkan pencarian User pada kebutuhan Manajemen User dan kriteria penerimaan; penyegaran visual tidak mengubah kebutuhan bisnis yang ada.
+- **Dampak DDS/DDL/database:** Pencarian menggunakan field User yang sudah tersedia; tidak memerlukan perubahan schema atau migration. Catat parameter pencarian dan pola antarmuka.
+- **Dampak kode/migration:** Perubahan direncanakan pada template CRUD master dan admin, serta view User untuk pencarian. Tidak ada perubahan model/migration yang direncanakan.
+- **Status implementasi dan pengujian:** Disetujui; implementasi dan pemeriksaan source akan dicatat setelah perubahan. Browser/runtime dan lima tema belum diverifikasi.
+- **Referensi commit:** Diisi setelah implementasi.
