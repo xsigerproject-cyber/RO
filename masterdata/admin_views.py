@@ -320,8 +320,6 @@ def restore_database(request):
 
 
 # Odoo 19 connection configuration (phase 1 only).
-import base64
-import hashlib
 from urllib.parse import urlparse
 
 import requests
@@ -339,9 +337,13 @@ class OdooConnectionForm(forms.Form):
 
 
 def _odoo_fernet():
-    # SECRET_KEY harus kuat, rahasia, dan stabil agar konfigurasi terenkripsi tetap dapat dibaca.
-    raw = hashlib.sha256((settings.SECRET_KEY + ":ro-odoo-api-key:v1").encode("utf-8")).digest()
-    return Fernet(base64.urlsafe_b64encode(raw))
+    encryption_key = getattr(settings, "ODOO_API_ENCRYPTION_KEY", "")
+    if not encryption_key:
+        raise ValueError("Kunci enkripsi Odoo belum dikonfigurasi pada environment server.")
+    try:
+        return Fernet(encryption_key.encode("ascii"))
+    except (ValueError, TypeError):
+        raise ValueError("Format ODOO_API_ENCRYPTION_KEY tidak valid. Gunakan kunci Fernet yang dibuat oleh cryptography.")
 
 
 @_admin_only
@@ -360,7 +362,12 @@ def odoo_connection_settings(request):
                 config.database = data["database"].strip()
                 config.username = data["username"].strip()
                 if data["api_key"]:
-                    config.api_key_encrypted = _odoo_fernet().encrypt(data["api_key"].encode()).decode("ascii")
+                    try:
+                        config.api_key_encrypted = _odoo_fernet().encrypt(data["api_key"].encode()).decode("ascii")
+                    except ValueError as exc:
+                        form.add_error("api_key", str(exc))
+                if form.errors:
+                    return render(request, "admin_tools/odoo_connection.html", {"form": form, "config": config, "has_api_key": bool(config and config.api_key_encrypted)})
                 config.save()
                 if request.POST.get("action") == "test":
                     try:
