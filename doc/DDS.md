@@ -634,3 +634,13 @@ Acuan visual ditetapkan dalam root `DESIGN.md`. Dokumen tersebut menjelaskan kar
 
 ### 16.4 Batasan Verifikasi
 Perubahan CSS dan template telah disimpan pada branch `main`. Belum dilakukan browser rendering, click-through, pengukuran kontras otomatis, atau pengujian visual pada lima tema dan breakpoint. Karena itu, konsistensi aktual seluruh komponen belum boleh dinyatakan lulus.
+
+
+## Penyelarasan CRUD dan pencarian User (2026-11-04)
+
+- Template daftar/form Master Data dan template Manajemen User/Role menggunakan token tema dari `static/css/themes.css`; hindari warna utility Bootstrap hard-coded jika tersedia token semantik.
+- Pola halaman mempertahankan endpoint, form Django, validasi, otorisasi, CSRF, dan proses import/export yang sudah ada.
+- Daftar User mendukung query parameter `q` dengan pencocokan case-insensitive pada username, first_name, last_name, dan email. Queryset tetap dibatasi oleh view Administrator.
+- Filter permission Role yang berjalan di browser dipertahankan; penyegaran tampilan tidak boleh mengubah checkbox yang dipilih atau perilaku filter.
+- Tidak ada perubahan model atau migration yang diperlukan untuk lingkup ini.
+- Verifikasi browser, aksesibilitas, lima tema, dan breakpoint tetap menjadi pekerjaan validasi terpisah; jangan menyatakan telah lulus tanpa bukti.
