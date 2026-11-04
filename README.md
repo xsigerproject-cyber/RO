@@ -19,6 +19,17 @@ docker compose exec web python manage.py seed_master
 ```
 Buka http://localhost:7070. Admin Django tersedia di /django-admin/.
 
+
+## Integrasi API Odoo 19
+
+Tahap pertama menyediakan pengaturan koneksi dan Test Connection saja; sinkronisasi data RO belum diaktifkan. Sebelum mengisi API Key melalui menu Administrator, buat key Fernet dan isi `ODOO_API_ENCRYPTION_KEY` pada file `.env` server:
+
+```bash
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+Jangan commit key tersebut ke Git. Simpan backup key secara aman; tanpa key yang sama, API Key terenkripsi tidak dapat dibuka kembali. Panduan lengkap: [doc/ODOO_API.md](doc/ODOO_API.md).
+
 ## Hak akses
 Tambahkan pengguna melalui Django Admin dan masukkan ke salah satu grup:
 - Admin Master: lihat, tambah, ubah, hapus.
