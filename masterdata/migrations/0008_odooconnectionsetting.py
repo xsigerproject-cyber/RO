@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="OdooConnectionSetting",
             fields=[
-                ("id", models.PositiveSmallIntegerField(primary_key=True, serialize=False, default=1, editable=False)),
+                ("id", models.PositiveSmallIntegerField(default=1, editable=False, primary_key=True, serialize=False)),
                 ("base_url", models.URLField(max_length=500)),
                 ("database", models.CharField(blank=True, max_length=120)),
                 ("username", models.CharField(max_length=150)),
