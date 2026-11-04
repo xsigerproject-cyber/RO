@@ -317,3 +317,102 @@ def restore_database(request):
         except OSError:
             logger.warning("Tidak dapat menghapus file upload restore sementara.")
     return redirect("admin_restore")
+
+
+# Odoo 19 connection configuration (phase 1 only).
+import base64
+import hashlib
+from urllib.parse import urlparse
+
+import requests
+from cryptography.fernet import Fernet, InvalidToken
+from django import forms
+
+from .models import OdooConnectionSetting
+
+
+class OdooConnectionForm(forms.Form):
+    base_url = forms.URLField(label="URL Odoo", max_length=500, widget=forms.URLInput(attrs={"class": "form-control", "placeholder": "https://perusahaan.odoo.com"}))
+    database = forms.CharField(label="Database", max_length=120, required=False, widget=forms.TextInput(attrs={"class": "form-control"}))
+    username = forms.CharField(label="User Integrasi", max_length=150, widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}))
+    api_key = forms.CharField(label="API Key", required=False, strip=False, widget=forms.PasswordInput(attrs={"class": "form-control", "autocomplete": "new-password", "placeholder": "Kosongkan untuk mempertahankan API Key lama"}))
+
+
+def _odoo_fernet():
+    # SECRET_KEY harus kuat, rahasia, dan stabil agar konfigurasi terenkripsi tetap dapat dibaca.
+    raw = hashlib.sha256((settings.SECRET_KEY + ":ro-odoo-api-key:v1").encode("utf-8")).digest()
+    return Fernet(base64.urlsafe_b64encode(raw))
+
+
+@_admin_only
+def odoo_connection_settings(request):
+    config = OdooConnectionSetting.objects.filter(pk=1).first()
+    if request.method == "POST":
+        form = OdooConnectionForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            if config is None and not data["api_key"]:
+                form.add_error("api_key", "API Key wajib diisi untuk konfigurasi pertama.")
+            if not form.errors:
+                if config is None:
+                    config = OdooConnectionSetting(pk=1)
+                config.base_url = data["base_url"].rstrip("/")
+                config.database = data["database"].strip()
+                config.username = data["username"].strip()
+                if data["api_key"]:
+                    config.api_key_encrypted = _odoo_fernet().encrypt(data["api_key"].encode()).decode("ascii")
+                config.save()
+                if request.POST.get("action") == "test":
+                    try:
+                        parsed = urlparse(config.base_url)
+                        if parsed.scheme not in ("https", "http") or not parsed.netloc or parsed.username or parsed.password:
+                            raise ValueError("URL Odoo tidak valid.")
+                        if parsed.scheme != "https" and parsed.hostname not in ("localhost", "127.0.0.1"):
+                            raise ValueError("Koneksi Odoo wajib menggunakan HTTPS.")
+                        key = _odoo_fernet().decrypt(config.api_key_encrypted.encode("ascii")).decode("utf-8")
+                        headers = {
+                            "Authorization": f"bearer {key}",
+                            "Content-Type": "application/json",
+                            "User-Agent": "RO-Operations/1.0",
+                        }
+                        if config.database:
+                            headers["X-Odoo-Database"] = config.database
+                        response = requests.post(
+                            config.base_url + "/json/2/res.users/context_get",
+                            headers=headers, json={}, timeout=(5, 15), allow_redirects=False,
+                        )
+                        if response.status_code == 200:
+                            config.connection_status = "success"
+                            config.connection_message = "Koneksi berhasil. Odoo menerima autentikasi API Key."
+                            messages.success(request, config.connection_message)
+                        elif response.status_code in (401, 403):
+                            raise ValueError("Autentikasi ditolak Odoo. Periksa API Key dan hak akses user integrasi.")
+                        elif response.status_code == 404:
+                            raise ValueError("Endpoint JSON-2 tidak ditemukan. Pastikan server menggunakan Odoo 19 dan URL benar.")
+                        elif response.is_redirect:
+                            raise ValueError("Odoo mengalihkan koneksi. Periksa URL dasar dan HTTPS.")
+                        else:
+                            raise ValueError(f"Odoo merespons HTTP {response.status_code}. Periksa URL dan database.")
+                    except (requests.RequestException, ValueError, InvalidToken) as exc:
+                        config.connection_status = "failed"
+                        config.connection_message = str(exc)[:500]
+                        messages.error(request, config.connection_message)
+                    config.last_tested_at = timezone.now()
+                    config.save(update_fields=["connection_status", "connection_message", "last_tested_at", "updated_at"])
+                else:
+                    config.connection_status = "untested"
+                    config.connection_message = "Konfigurasi disimpan. Jalankan Test Connection untuk memeriksa koneksi."
+                    config.save(update_fields=["connection_status", "connection_message", "updated_at"])
+                    messages.success(request, "Pengaturan koneksi Odoo berhasil disimpan.")
+                return redirect("admin_odoo_connection")
+    else:
+        form = OdooConnectionForm(initial={
+            "base_url": config.base_url if config else "",
+            "database": config.database if config else "",
+            "username": config.username if config else "",
+        })
+    return render(request, "admin_tools/odoo_connection.html", {
+        "form": form,
+        "config": config,
+        "has_api_key": bool(config and config.api_key_encrypted),
+    })
