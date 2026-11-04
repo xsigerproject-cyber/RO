@@ -56,3 +56,17 @@ Dashboard memakai konteks jumlah Dapur, Jadwal, Toko, dan Template Produk dari v
 
 ## Status
 Baseline arah visual disetujui pemilik produk pada 3 November 2026. Dokumen ini menjadi rujukan untuk pekerjaan frontend berikutnya; perubahan arah visual perlu dicatat pada Decision Log.
+
+
+## Arah Visual SAP Fiori-inspired (4 November 2026)
+
+Pemilik produk memilih file referensi `sap_fiori_erp_dashboard_crud.html` sebagai acuan visual utama. Implementasi mengadaptasi pola visual Fiori untuk aplikasi RO, tanpa menyalin modul, data contoh, atau klaim fungsi dari demo Material Management.
+
+- **Shell/header:** top bar biru gelap bergaya enterprise, identitas RO, konteks workspace, pemilih tema, dan menu akun.
+- **Sidebar:** navigasi kiri berkelompok, ikon Font Awesome yang konsisten, state aktif dengan penanda visual, serta footer status aplikasi.
+- **Tipografi:** Inter dengan fallback Segoe UI/system sans-serif; hierarki judul, deskripsi, label, dan nilai mengikuti karakter Fiori.
+- **Warna:** shell gelap dan aksen biru Fiori pada tema Light; tema Dark, Ocean, Forest, dan Sunset tetap tersedia dengan shell/aksen yang disesuaikan.
+- **Komponen:** permukaan putih/netral, border halus, radius kecil, tombol dan kontrol ringkas, tabel/form dengan kepadatan back-office, fokus keyboard yang jelas.
+- **Dashboard RO:** jumlah Dapur, Jadwal, Toko, Template Produk dan pintasan Buat RO/Daftar RO. Tidak menyalin metrik revenue, inventory, purchase order, chart, maupun audit log demo karena tidak bersumber dari data aplikasi.
+- **Batasan:** perubahan hanya pada presentasi dan navigasi; aturan bisnis, hak akses, endpoint, skema database, dan alur transaksi tidak berubah. Jangan menambahkan search/notifikasi yang belum terhubung ke fungsi nyata.
+- **Verifikasi:** source telah diperbarui; render browser, click-through, lima tema, dan breakpoint belum diuji sehingga kesamaan visual final belum dapat dinyatakan tervalidasi.
