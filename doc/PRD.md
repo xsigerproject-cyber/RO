@@ -423,3 +423,8 @@ Master Dapur mempertahankan field `operation_type` yang sudah ada dan menambahka
 - `operation_type_terima`: nilai operation type untuk proses penerimaan.
 
 Ketiga field ditampilkan pada form Tambah/Ubah Dapur dan daftar Dapur. Nilai kedua field baru dapat dicari pada daftar, serta ikut dalam template impor, proses impor, dan ekspor Excel. Perubahan ini tidak mengubah aturan transaksi RO atau field `document`.
+
+
+## 15. Arah Desain SAP Fiori-inspired
+
+File `sap_fiori_erp_dashboard_crud.html` menjadi referensi visual untuk shell/header, sidebar, tipografi Inter, ikon, warna, komponen CRUD, dan pola dashboard. Adaptasi mengikuti kebutuhan RO dan tidak menyalin data/fitur demo Material Management. Dashboard hanya menampilkan jumlah master yang tersedia dari backend dan pintasan transaksi yang memang diizinkan. Penyegaran tampilan tidak mengubah role, aturan bisnis, endpoint, atau skema database. Tema Light, Dark, Ocean, Forest, dan Sunset tetap didukung.
