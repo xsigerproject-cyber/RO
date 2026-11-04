@@ -402,3 +402,23 @@ Lihat riwayat commit branch `main` untuk `DESIGN.md`, template dashboard, CSS te
 - CSS CRUD menggunakan token tema yang sudah tersedia, termasuk `--bg-card`, `--bg-secondary`, `--text-primary`, `--text-secondary`, `--border-color`, `--accent-color`, dan warna status semantik.
 - Tidak ada perubahan model, migration, aturan bisnis, endpoint, otorisasi, atau proses import/export.
 - **Batas verifikasi:** perubahan telah diperiksa pada source code repository. Belum dilakukan browser rendering, click-through, pengujian lima tema/breakpoint, automated Django tests, Docker build, atau verifikasi runtime di server. Karena itu hasil belum boleh disebut lulus audit visual/runtime.
+## 18. 2026-11-04 — Penambahan Operation Type Kirim dan Terima pada Master Dapur
+
+**Konteks/masalah:** Master Dapur saat ini memiliki satu field `operation_type`. Kebutuhan operasional memerlukan pencatatan terpisah untuk operation type pengiriman dan penerimaan.
+
+**Keputusan yang disetujui:**
+1. Pertahankan field `operation_type` yang sudah ada.
+2. Tambahkan `operation_type_kirim` dan `operation_type_terima` sebagai field teks bebas, masing-masing dengan batas panjang 120 karakter seperti field lama.
+3. Tampilkan kedua field baru pada CRUD Master Dapur (daftar, tambah, ubah).
+4. Sertakan kedua field pada pencarian daftar Dapur dan template impor/impor/ekspor Excel.
+5. Tidak mengubah field `document`, master lain, atau alur transaksi RO.
+
+**Dampak PRD:** Menambahkan kebutuhan tiga field operation type pada Master Dapur.
+
+**Dampak DDS/DDL/database:** Menambahkan dua kolom CharField(120) pada tabel Dapur melalui migration baru. Record lama menerima string kosong pada saat migration; input baru wajib diisi melalui ModelForm.
+
+**Dampak kode/migration:** Memperbarui model Dapur dan konfigurasi field CRUD; menambahkan migration `0007_dapur_operation_types.py`. ModelForm Dapur yang memakai `fields = "__all__"` menyajikan kedua field secara otomatis. Konfigurasi CRUD juga mengatur pencarian dan Excel.
+
+**Status implementasi dan pengujian:** Source code dan dokumen diperbarui pada branch `main`. Belum dijalankan `makemigrations --check`, `migrate`, automated tests, Docker build, atau verifikasi browser/server. Migration perlu diuji pada salinan database sebelum deployment.
+
+**Referensi commit:** Lihat riwayat branch `main` untuk perubahan model, CRUD, migration, dan dokumentasi.
