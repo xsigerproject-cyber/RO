@@ -35,7 +35,7 @@ CONFIG = {
     "dapur": (
         Dapur,
         DapurForm,
-        ["kode_dapur", "nama_dapur", "operation_type", "document"],
+        ["kode_dapur", "nama_dapur", "operation_type", "operation_type_kirim", "operation_type_terima", "document"],
         "Dapur",
     ),
     "jadwal": (
