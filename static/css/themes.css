@@ -187,3 +187,94 @@ textarea.form-control { min-height: 100px; }
   .crud-panel__heading { padding-left:1rem; padding-right:1rem; }
   .crud-actions { white-space:normal; min-width:9rem; }
 }
+
+
+/* SAP Fiori-inspired RO shell and workspace components. */
+:root,[data-theme="light"] { --fiori-shell:#354a5f; --fiori-shell-hover:#435b73; --fiori-blue:#0a6ed1; --fiori-blue-hover:#0854a0; }
+[data-theme="dark"] { --fiori-shell:#111b27; --fiori-shell-hover:#26394d; --fiori-blue:#78adff; --fiori-blue-hover:#a1c5ff; }
+[data-theme="ocean"] { --fiori-shell:#12394f; --fiori-shell-hover:#1d536e; --fiori-blue:#006b91; --fiori-blue-hover:#00516f; }
+[data-theme="forest"] { --fiori-shell:#1d3d2e; --fiori-shell-hover:#2b5942; --fiori-blue:#246344; --fiori-blue-hover:#194a31; }
+[data-theme="sunset"] { --fiori-shell:#493126; --fiori-shell-hover:#634333; --fiori-blue:#a9432d; --fiori-blue-hover:#873522; }
+body { font-family:Inter,"Segoe UI",system-ui,sans-serif; }
+.fiori-shell { min-height:3.25rem; background:var(--fiori-shell)!important; border:0!important; color:#fff!important; box-shadow:0 1px 3px rgba(0,0,0,.16)!important; }
+.fiori-shell .navbar-brand,.fiori-shell .shell-toggle { color:#fff!important; }
+.fiori-shell .navbar-brand { display:flex; align-items:center; gap:.65rem; min-width:14rem; }
+.brand-mark { width:2rem;height:2rem;display:grid;place-items:center;border-radius:.35rem;background:var(--fiori-blue);color:#fff;font-size:1rem; }
+.brand-copy { display:flex;flex-direction:column;line-height:1.15; }
+.brand-copy strong { font-size:.9rem;font-weight:650;letter-spacing:.005em; }
+.brand-copy small { margin-top:.18rem;color:rgba(255,255,255,.68);font-size:.66rem;font-weight:400; }
+.shell-context { align-items:center;gap:.6rem;color:rgba(255,255,255,.78);font-size:.78rem; }
+.shell-context span { color:rgba(255,255,255,.38); }
+.shell-user { display:flex;align-items:center;gap:.5rem;color:#fff!important;font-size:.78rem;text-decoration:none; }
+.shell-user:hover { background:var(--fiori-shell-hover); }
+.shell-avatar { display:grid;place-items:center;width:1.8rem;height:1.8rem;border-radius:50%;background:#d9eaf8;color:#23445f;font-weight:700; }
+.fiori-sidebar { background:var(--fiori-shell)!important; }
+.fiori-sidebar .sb-sidenav-menu-heading { padding:.9rem 1rem .4rem;color:rgba(255,255,255,.58)!important;font-size:.66rem;letter-spacing:.1em;font-weight:700; }
+.fiori-sidebar .nav-link { margin:.12rem .55rem;padding:.68rem .8rem;border-radius:.25rem;color:rgba(255,255,255,.82)!important;font-size:.82rem;font-weight:500; }
+.fiori-sidebar .nav-link .sb-nav-link-icon { width:1.5rem;color:rgba(255,255,255,.65)!important; }
+.fiori-sidebar .nav-link:hover { background:var(--fiori-shell-hover);color:#fff!important; }
+.fiori-sidebar .nav-link.active { background:rgba(255,255,255,.14);color:#fff!important;box-shadow:inset 3px 0 0 #91c8f6; }
+.fiori-sidebar .nav-link.active .sb-nav-link-icon { color:#fff!important; }
+.fiori-sidebar-footer { display:flex;align-items:center;gap:.6rem;background:rgba(0,0,0,.12)!important;color:#fff!important;font-size:.75rem; }
+.fiori-sidebar-footer span:last-child { display:flex;flex-direction:column;line-height:1.2; }
+.fiori-sidebar-footer small { color:rgba(255,255,255,.55);font-size:.62rem;letter-spacing:.08em; }
+.fiori-sidebar-footer strong { font-size:.76rem;font-weight:600; }
+.system-indicator { width:.48rem;height:.48rem;border-radius:50%;background:#5bd18b;box-shadow:0 0 0 3px rgba(91,209,139,.15); }
+.fiori-main { min-height:calc(100vh - 7rem);padding:1.6rem 1.8rem!important; }
+.fiori-messages { max-width:90rem;margin:0 auto; }
+.fiori-footer { display:flex;justify-content:space-between;gap:1rem;padding:.8rem 1.8rem;color:var(--text-muted);font-size:.7rem;border-top:1px solid var(--border-color);background:var(--bg-card); }
+.fiori-page-heading { display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;max-width:90rem;margin:0 auto 1.6rem; }
+.fiori-page-heading h1 { margin:0 0 .35rem;color:var(--text-primary);font-size:1.65rem;font-weight:600;letter-spacing:-.035em; }
+.fiori-page-heading p:last-child { margin:0;color:var(--text-secondary);font-size:.88rem; }
+.fiori-eyebrow { margin:0 0 .4rem;color:var(--text-muted);font-size:.67rem;font-weight:700;letter-spacing:.12em; }
+.fiori-page-actions { display:flex;flex-wrap:wrap;gap:.5rem; }
+.fiori-page-actions .btn { font-size:.8rem;padding:.55rem .9rem; }
+.fiori-section { max-width:90rem;margin:0 auto 1.4rem; }
+.fiori-section-heading { display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:.75rem; }
+.fiori-section-heading h2 { margin:0 0 .2rem;color:var(--text-primary);font-size:1rem;font-weight:650; }
+.fiori-section-heading p { margin:0;color:var(--text-secondary);font-size:.8rem; }
+.fiori-section-meta { color:var(--text-muted);font-size:.72rem; }
+.fiori-kpi-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem; }
+.fiori-kpi { position:relative;display:grid;grid-template-columns:2.5rem 1fr;align-items:center;column-gap:.75rem;row-gap:.12rem;min-width:0;padding:1rem 1.05rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:.3rem;color:var(--text-primary);text-decoration:none; }
+.fiori-kpi:hover { border-color:var(--accent-color);background:var(--bg-card);color:var(--text-primary); }
+.fiori-kpi-icon { grid-row:1/3;display:grid;place-items:center;width:2.45rem;height:2.45rem;border-radius:.3rem;background:var(--bg-secondary);color:var(--accent-color);font-size:1.05rem; }
+.fiori-kpi-label { color:var(--text-secondary);font-size:.78rem; }
+.fiori-kpi strong { font-size:1.55rem;line-height:1.25;font-weight:650;font-variant-numeric:tabular-nums; }
+.fiori-kpi-link { grid-column:2;color:var(--accent-color);font-size:.7rem;margin-top:.3rem; }
+.fiori-kpi-link i { margin-left:.25rem;font-size:.62rem; }
+.fiori-workflow { padding:1.1rem 1.2rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:.3rem; }
+.fiori-workflow-links { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem; }
+.fiori-workflow-links a { display:flex;align-items:center;gap:.75rem;padding:.8rem;border:1px solid var(--border-color);border-radius:.25rem;color:var(--text-primary);text-decoration:none; }
+.fiori-workflow-links a:hover { border-color:var(--accent-color);background:var(--bg-secondary); }
+.fiori-workflow-links a>span:nth-child(2) { display:flex;flex-direction:column;gap:.15rem; }
+.fiori-workflow-links strong { font-size:.82rem;font-weight:650; }
+.fiori-workflow-links small { color:var(--text-secondary);font-size:.72rem; }
+.workflow-icon { display:grid;place-items:center;width:2.25rem;height:2.25rem;border-radius:.25rem;background:var(--bg-secondary);color:var(--accent-color); }
+.fiori-workflow-links .fa-chevron-right { color:var(--text-muted);font-size:.7rem; }
+.theme-switcher { gap:.1rem; }
+.theme-btn { width:30px;height:30px;flex-basis:30px;padding:7px; }
+.theme-btn.active { border-color:#fff; }
+.fiori-main .crud-panel,.fiori-main .crud-workspace { border-radius:.3rem; }
+.fiori-main .crud-heading h1 { font-size:1.55rem;font-weight:600;letter-spacing:-.03em; }
+.fiori-main .crud-panel__heading h2 { font-weight:650; }
+.fiori-main .crud-table thead th { font-size:.72rem;letter-spacing:.045em; }
+.fiori-main .btn { border-radius:.25rem;font-weight:600; }
+@media(max-width:991.98px) {
+  .fiori-main { padding:1.25rem!important; }
+  .fiori-kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:575.98px) {
+  .fiori-main { padding:1rem!important; }
+  .fiori-page-heading { align-items:stretch;flex-direction:column; }
+  .fiori-page-actions { width:100%; }
+  .fiori-page-actions .btn { flex:1; }
+  .fiori-section-heading { align-items:flex-start;flex-direction:column; }
+  .fiori-kpi-grid { gap:.55rem; }
+  .fiori-kpi { padding:.8rem;grid-template-columns:2rem 1fr;column-gap:.55rem; }
+  .fiori-kpi-icon { width:2rem;height:2rem;font-size:.9rem; }
+  .fiori-kpi strong { font-size:1.3rem; }
+  .fiori-workflow-links { grid-template-columns:1fr; }
+  .fiori-footer { padding:.75rem 1rem; }
+  .shell-context { display:none!important; }
+  .fiori-shell .navbar-brand { min-width:0; }
+}
