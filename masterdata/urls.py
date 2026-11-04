@@ -5,6 +5,7 @@ from . import admin_views
 
 urlpatterns = [
     path("admin-tools/", admin_views.admin_home, name="admin_home"),
+    path("admin-tools/odoo-connection/", admin_views.odoo_connection_settings, name="admin_odoo_connection"),
     path("admin-tools/users/", admin_views.user_list, name="admin_user_list"),
     path("admin-tools/roles/", admin_views.role_list, name="admin_role_list"),
     path("admin-tools/roles/add/", admin_views.role_create, name="admin_role_create"),
