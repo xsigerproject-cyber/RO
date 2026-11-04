@@ -655,3 +655,14 @@ Model `Dapur` mempertahankan `operation_type` dan menambahkan:
 Kedua field baru merupakan teks bebas, mengikuti tipe dan batas panjang field `operation_type`. Migration `0007_dapur_operation_types.py` menambahkan kedua kolom; record Dapur yang sudah ada diisi string kosong saat migration agar data lama tetap terjaga. Setelah migration, form baru meminta nilai field sesuai validasi CharField wajib.
 
 Konfigurasi CRUD Dapur memasukkan kedua field pada daftar dan pencarian. Karena form Dapur menggunakan ModelForm dengan `fields = "__all__"`, kedua field otomatis tersedia pada form tambah dan ubah. Konfigurasi field yang sama juga mengikutsertakannya pada header/baris template impor, validasi impor, dan ekspor Excel. Tidak ada perubahan pada Jadwal, Toko, Template Produk, RO, endpoint, atau otorisasi.
+
+
+## 17. Adaptasi Antarmuka SAP Fiori-inspired (2026-11-04)
+
+- Referensi HTML demo digunakan untuk pola shell biru gelap, sidebar berkelompok, Inter, ikon Font Awesome, aksen biru, komponen tabel/form, dan dashboard berbasis tile.
+- Implementasi berada pada `templates/base.html`, `templates/masterdata/dashboard.html`, `static/css/themes.css`, dan `static/css/sb-admin-overrides.css`.
+- Theme switcher dan penyimpanan tema UserProfile tetap memakai endpoint yang sama. Lima tema dipertahankan.
+- Dashboard hanya menggunakan `counts.dapur`, `counts.jadwal`, `counts.toko`, `counts.produk`, serta tautan transaksi yang sudah ada. Tidak ada query KPI baru.
+- Tidak ada perubahan model, migration, endpoint, validasi, permission, atau aturan RO.
+- Google Fonts Inter dan Font Awesome menggunakan CDN; tampilan font/ikon memerlukan koneksi browser ke sumber CDN. Font stack fallback tetap tersedia.
+- Verifikasi browser, responsivitas aktual, kontras, click-through, dan lima tema belum dilakukan.
