@@ -702,3 +702,4 @@ Migration: `0008_odooconnectionsetting.py`, bergantung pada `0007_dapur_operatio
 
 ### Batas lingkup dan verifikasi
 Tahap ini tidak melakukan sinkronisasi, pembacaan master, atau transaksi RO. Belum ada bukti koneksi ke instance Odoo pengguna, build Docker, migration apply, maupun pengujian browser. Validasi deployment perlu memastikan environment key terpasang, migration 0008 berjalan, halaman hanya dapat diakses Administrator, dan Test Connection berhasil dengan API Key yang valid.
+**Persyaratan lisensi Odoo:** Dokumentasi Odoo 19 menyatakan External JSON-2 API hanya tersedia pada paket Custom dan tidak tersedia pada One App Free atau Standard. Kegagalan koneksi pada paket yang tidak mendukung API bukan kesalahan API Key aplikasi.
