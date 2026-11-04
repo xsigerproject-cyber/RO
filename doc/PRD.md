@@ -450,3 +450,4 @@ Kriteria penerimaan:
 54. Test Connection memanggil endpoint JSON-2 read-only `res.users/context_get`, menampilkan hasil berhasil/gagal, dan mencatat waktu pengujian.
 55. Jika kunci enkripsi belum tersedia atau tidak valid, aplikasi menolak menyimpan API Key dan menampilkan pesan yang dapat ditindaklanjuti.
 56. Fitur ini tidak mengirim atau membaca data RO.
+Catatan kompatibilitas: Odoo menyatakan External JSON-2 API hanya tersedia pada paket Custom; paket One App Free dan Standard tidak menyediakan akses external API. Pastikan paket instance Odoo mendukung API ini sebelum menganggap Test Connection dapat berhasil.
